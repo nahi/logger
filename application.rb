@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.11 2000/10/14 06:33:08 nakahiro Exp $
+# $Id: application.rb,v 1.12 2001/10/04 05:53:46 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -34,24 +34,28 @@
 #     # To create new (and to remove old) logfile, add File::CREAT like;
 #     #   file = open( 'foo.log', File::WRONLY | File::APPEND | File::CREAT )
 #     logDev = Log.new( file )
+#     logDev.add( Log::SEV_WARN, nil, 'MyProgram' ) { 'It is only warning!' }
 #     logDev.add( Log::SEV_WARN, 'It is only warning!', 'MyProgram' )
 #   	...
 #     logDev.close()
 #
 #   Sample usage2:
 #     logDev = Log.new( 'logfile.log', 10, 102400 )
+#     logDev.add( Log::SEV_CAUTION, nil, 'MyProgram' ) { 'It is caution!' }
 #     logDev.add( Log::SEV_CAUTION, 'It is caution!', 'MyProgram' )
 #   	...
 #     logDev.close()
 #
 #   Sample usage3:
 #     logDev = Log.new( 'logfile.log', 'weekly' )
-#     logDev.add( Log::SEV_INFO, 'Informational!', 'MyProgram' )
+#     logDev.add( Log::SEV_INFO ) { 'Informational!' }
+#     logDev.add( Log::SEV_INFO, 'Informational!' )
 #   	...
 #     logDev.close()
 #
 #   Sample usage4:
 #     logDev = Log.new( STDERR )
+#     logDev.add( Log::SEV_FATAL ) { 'It is fatal error...' }
 #     logDev.add( Log::SEV_FATAL, 'It is fatal error...' )
 #     	...
 #     logDev.close()
@@ -83,12 +87,14 @@ class Log # throw Log::Error
   attr( :sevThreshold, TRUE )
 
   # SYNOPSIS
-  #   Log.add( severity, comment, program )
+  #   Log.add( severity, comment = nil, program = '_unknown_' ) { ... }
   #
   # ARGS
   #   severity	Severity. See above to give this.
   #   comment	Message String.
   #   program	Program name String.
+  #   block     Can be omitted.
+  #             Called to get a message String if comment is nil.
   #
   # DESCRIPTION
   #   Log a log if the given severity is enough severe.
@@ -104,9 +110,12 @@ class Log # throw Log::Error
   #   Log no message, and returns true.
   #
   public
-  def add( severity, comment, program = '_unknown_' )
+  def add( severity, comment = nil, program = '_unknown_' )
     severity = SEV_UNKNOWN unless severity
     return true if ( severity < @sevThreshold )
+    if block_given? and comment.nil?
+      comment = yield
+    end
     if ( @logDev.shiftLog? )
       begin
       	@logDev.shiftLog
@@ -117,7 +126,7 @@ class Log # throw Log::Error
     end
     severityLabel = formatSeverity( severity )
     timestamp = formatDatetime( Time.now )
-    comment = formatComment( comment )
+    comment = formatComment( comment ) if comment
     message = formatMessage( severityLabel, timestamp, comment, program )
     @logDev.write( message )
     true
@@ -264,7 +273,7 @@ class Log # throw Log::Error
     file.syswrite( "# Logfile created on %s by %s\n" % [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.11 2000/10/14 06:33:08 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.12 2001/10/04 05:53:46 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -361,9 +370,29 @@ class Application
     true
   end
 
+  # SYNOPSIS
+  #   log( severity, comment = nil ) { ... }
+  #
+  # ARGS
+  #   severity	Severity. See above to give this.
+  #   comment	Message String.
+  #   block     Can be omitted.
+  #             Called to get a message String if comment is nil or omitted.
+  #
+  # DESCRIPTION
+  #   Log a log if the given severity is enough severe.
+  #   For more detail, see Log.add.
+  #
+  # RETURN
+  #   true if succeed, false if failed.
+  #   When the given severity is not enough severe,
+  #   Log no message, and returns true.
+  #
   protected
-  def log( severity, message )
-    @log.add( severity, message, @appName )
+  def log( severity, message = nil )
+    @log.add( severity, message, @appName ) do
+      yield if block_given?
+    end
   end
 
   # private method 'run' must be defined in derived classes.
