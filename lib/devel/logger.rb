@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 
-# $Id: logger.rb,v 1.3 2002/01/22 08:44:44 nakahiro Exp $
+# $Id: logger.rb,v 1.4 2002/01/22 09:01:51 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.3 2002/01/22 08:44:44 nakahiro Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.4 2002/01/22 09:01:51 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -513,7 +513,7 @@ end
 class Application
   include Devel::Logger::Severity
 
-  attr_reader :appName, :logDev, :status
+  attr_reader :appName, :logDev
 
   # SYNOPSIS
   #   Application.new( appName = '' )
@@ -546,7 +546,7 @@ class Application
     rescue
       log( SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.type})\n" << $@.join( "\n" ))
     ensure
-      log( SEV_INFO, "End of #{ @appName }. (status: #{ @status.to_s })" )
+      log( SEV_INFO, "End of #{ @appName }. (status: #{ status.to_s })" )
     end
     status
   end
