@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.7 2002/02/01 01:24:46 nakahiro Exp $
+# $Id: logger.rb,v 1.8 2002/02/01 01:48:35 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.7 2002/02/01 01:24:46 nakahiro Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.8 2002/02/01 01:48:35 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -102,6 +102,9 @@ class Logger
 
   # Logging severity threshold.
   attr_accessor :sevThreshold
+
+  # Logging program name.
+  attr_accessor :progName
 
   # Interface for Log4r compatibility.
   DEBUG = SEV_DEBUG
@@ -531,10 +534,11 @@ class Application
   # DESCRIPTION
   #   Create an instance.  Log device is STDERR by default.
   #
-  def initialize( appName = '' )
+  def initialize( appName = nil )
     @appName = appName
     @log = Devel::Logger.new( STDERR )
-    @sevThreshold = SEV_DEBUG
+    @log.progName = @appName
+    @sevThreshold = @log.sevThreshold
   end
 
   # SYNOPSIS
@@ -570,6 +574,7 @@ class Application
   #
   def setLog( logDev, shiftAge = 0, shiftSize = 102400 )
     @log = Devel::Logger.new( logDev, shiftAge, shiftSize )
+    @log.progName = @appName
     @log.sevThreshold = @sevThreshold
   end
 
@@ -607,10 +612,8 @@ protected
   #   When the given severity is not enough severe,
   #   Log no message, and returns true.
   #
-  def log( severity, message = nil )
-    @log.add( severity, message, @appName ) do
-      yield if block_given?
-    end
+  def log( severity, message = nil, &block )
+    @log.add( severity, message, @appName, &block )
   end
 
 private
