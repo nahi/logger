@@ -1,6 +1,6 @@
 # Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.2 2003/09/18 02:27:58 nahi Exp $
+# $Id: logger.rb,v 1.3 2003/09/18 06:12:30 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -71,7 +71,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.2 2003/09/18 02:27:58 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.3 2003/09/18 06:12:30 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -247,14 +247,14 @@ private
 
   def format_datetime(datetime)
     if @datetime_format.nil?
-      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d" % datetime.usec
+      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d " % datetime.usec
     else
       datetime.strftime(@datetime_format)
     end
   end
 
   def format_message(severity, timestamp, msg, progname)
-    line = '%s, [%s #%d] %5s -- %s: %s' << "\n"
+    line = '%s, [%s#%d] %5s -- %s: %s' << "\n"
     line % [severity[0..0], timestamp, $$, severity, progname, msg]
   end
 
@@ -286,7 +286,8 @@ private
     #	opt	Hash of options.
     #
     # DESCRIPTION
-    #   Log device class. Output and shifting of log.
+    #   Log device class.  Output and shifting of log.
+    #	When a String was given, LogDevice opens the file and set sync = true.
     #
     # OPTIONS
     #   :shift_age
@@ -301,11 +302,10 @@ private
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
       if log.is_a?(IO)
-	# IO was given. Use it as a log device.
 	@dev = log
       elsif log.is_a?(String)
-	# String was given. Open the file as a log device.
 	@dev = open_logfile(log)
+	@dev.sync = true
 	@filename = log
 	@shift_age = opt[:shift_age] || 7
 	@shift_size = opt[:shift_size] || 1048576
@@ -508,7 +508,7 @@ private
     end
 
     # SYNOPSIS
-    #   Application#log=(log, shift_age, shift_size)
+    #   Application#set_log(log, shift_age, shift_size)
     #
     # ARGS
     #   (Args are explained in the class Logger)
@@ -516,11 +516,16 @@ private
     # DESCRIPTION
     #   Set the log device for this application.
     #
-    def log=(logdev, shift_age = 0, shift_size = 102400)
+    def set_log(logdev, shift_age = 0, shift_size = 102400)
       @log = Logger.new(logdev, shift_age, shift_size)
       @log.progname = @appname
       @log.level = @level
     end
+
+    def log=(logdev)
+      set_log(logdev)
+    end
+
 
     # SYNOPSIS
     #   Application#level=(severity)
