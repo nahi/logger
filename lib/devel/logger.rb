@@ -1,4 +1,4 @@
-warn("Loading devel/logger compatibility library...")
+STDERR.puts("Loading devel/logger compatibility library...")
 require 'logger'
 
 module Devel
