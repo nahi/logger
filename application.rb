@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.5 2000/01/11 12:31:10 nakahiro Exp $
+# $Id: application.rb,v 1.6 2000/03/29 13:26:01 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -26,7 +26,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: Only info.
 #
 #   Sample usage1:
-#     file = open( 'foo.log', 'a' )
+#     file = open( 'foo.log', File::WRONLY | File::APPEND )
 #     logDev = Log.new( file )
 #     logDev.add( Log::SEV_WARN, 'It is only warning!', 'MyProgram' )
 #   	...
@@ -185,7 +185,7 @@ class Log # throw Log::Error
     elsif ( log.is_a?( String )) then
       # String was given. Open the file as a log device.
       dev = if ( FileTest.exist?( log.to_s )) then
-          open( log.to_s, "a" )
+          open( log.to_s, ( File::WRONLY | File::APPEND ))
       	else
 	  createLogFile( log.to_s )
       	end
@@ -200,7 +200,7 @@ class Log # throw Log::Error
   end
 
   def createLogFile( fileName )
-    logDev = open( fileName, 'a' )
+    logDev = open( fileName, ( File::WRONLY | File::APPEND ))
     addLogHeader( logDev )
     logDev
   end
@@ -210,7 +210,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.5 2000/01/11 12:31:10 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.6 2000/03/29 13:26:01 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
