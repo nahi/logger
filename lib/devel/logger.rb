@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 
-# $Id: logger.rb,v 1.2 2002/01/21 02:12:10 nakahiro Exp $
+# $Id: logger.rb,v 1.3 2002/01/22 08:44:44 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,8 +75,7 @@ module Devel
 #
 class Logger
 
-  %q$Id: logger.rb,v 1.2 2002/01/21 02:12:10 nakahiro Exp $ =~
-    %/: (\S+),v (\S+)/
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.3 2002/01/22 08:44:44 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -488,7 +487,6 @@ end
 
 # DESCRIPTION
 #   Devel::Application -- Add logging support to your application.
-#
 #
 # USAGE
 #   1. Define your application class as a sub-class of this class.
