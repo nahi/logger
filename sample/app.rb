@@ -19,17 +19,17 @@ class MyApp < Application
   end
 
   def run
-    @log.info { 'Started.' }
+    @log.info  { 'Started.' }
 
-    @log.info { "This block is not evaled because 'debug' is not severe here." }
+    @log.info  { "This block isn't evaled because 'debug' is not severe here." }
     @log.debug { "Result = " << foo( 0 ) }
-    @log.info { "So nothing is dumped." }
+    @log.info  { "So nothing is dumped." }
 
-    @log.info { "This block is evaled because 'info' is enough severe here." }
-    @log.info { "Result = " << foo( 0 ) }
-    @log.info { "Above causes exception, so not reached here." }
+    @log.info  { "This block is evaled because 'info' is enough severe here." }
+    @log.info  { "Result = " << foo( 0 ) }
+    @log.info  { "Above causes exception, so not reached here." }
 
-    @log.info { 'Finished.' }
+    @log.info  { 'Finished.' }
   end
 
 private
