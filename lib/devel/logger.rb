@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.14 2003/06/01 10:08:24 nahi Exp $
+# $Id: logger.rb,v 1.15 2003/07/31 15:57:23 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -45,7 +45,7 @@ module Devel
 #   2. Message as a string.
 #     logger.error "Argument #{ @foo } mismatch."
 #
-#   3. With progName.
+#   3. With prog_name.
 #     logger.info('initialize') { "Initializing..." }
 #
 #   4. With severity.
@@ -58,7 +58,7 @@ module Devel
 # Setting severity threshold.
 #
 #   1. Original interface.
-#     logger.sevThreshold = Devel::Logger::SEV_WARN
+#     logger.sev_threshold = Devel::Logger::SEV_WARN
 #
 #   2. Log4r (somewhat) compatible interface.
 #     logger.level = Devel::Logger::INFO
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.14 2003/06/01 10:08:24 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.15 2003/07/31 15:57:23 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -101,13 +101,21 @@ class Logger
   include Logger::Severity
 
   # Logging severity threshold.
-  attr_accessor :sevThreshold
+  attr_accessor :sev_threshold
 
   # Logging program name.
-  attr_accessor :progName
+  attr_accessor :prog_name
 
   # Logging date-time format (string passed to strftime)
-  attr_accessor :datetimeFormat
+  attr_accessor :datetime_format
+
+  # Interface for backward compatibility.
+  alias sevThreshold sev_threshold
+  alias sevThreshold= sev_threshold=
+  alias progName prog_name
+  alias progName= prog_name=
+  alias datetimeFormat datetime_format
+  alias datetimeFormat= datetime_format=
 
   # Interface for Log4r compatibility.
   DEBUG = SEV_DEBUG
@@ -117,63 +125,56 @@ class Logger
   FATAL = SEV_FATAL
 
   # Interface for Log4r compatibility.
-  def level=(newLevel)
-    @sevThreshold = newLevel
-  end
+  alias level sev_threshold
+  alias level= sev_threshold=
 
   # Interface for Log4r compatibility.
-  def level
-    @sevThreshold
-  end
-
+  def debug?;  @logdev and SEV_DEBUG >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def debug?;  @logDev and SEV_DEBUG >= @sevThreshold; end
+  def info?;   @logdev and SEV_INFO  >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def info?;   @logDev and SEV_INFO  >= @sevThreshold; end
+  def warn?;   @logdev and SEV_WARN  >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def warn?;   @logDev and SEV_WARN  >= @sevThreshold; end
+  def error?;  @logdev and SEV_ERROR >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def error?;  @logDev and SEV_ERROR >= @sevThreshold; end
-  # Interface for Log4r compatibility.
-  def fatal?;  @logDev and SEV_FATAL >= @sevThreshold; end
+  def fatal?;  @logdev and SEV_FATAL >= @sev_threshold; end
 
 public
 
   # SYNOPSIS
-  #   Logger.new(name, shiftAge = 7, shiftSize = 1048576)
+  #   Logger.new(name, shift_age = 7, shift_size = 1048576)
   #
   # ARGS
   #   log	String as filename of logging.
   #		or
   #		IO as logging device(i.e. STDERR).
-  #   shiftAge	An Integer	Num of files you want to keep aged logs.
+  #   shift_age	An Integer	Num of files you want to keep aged logs.
   #		'daily'		Daily shifting.
   #		'weekly'	Weekly shifting (Every monday.)
   #		'monthly'	Monthly shifting (Every 1th day.)
-  #   shiftSize	Shift size threshold when shiftAge is an integer.
-  #		Otherwise (like 'daily'), shiftSize will be ignored.
+  #   shift_size	Shift size threshold when shift_age is an integer.
+  #		Otherwise (like 'daily'), shift_size will be ignored.
   #
   # DESCRIPTION
   #   Create an instance.
   #
-  def initialize(logDev, shiftAge = 0, shiftSize = 1048576)
-    @progName = nil
-    @logDev = LogDevice.new(logDev,
-      :shiftAge => shiftAge, :shiftSize => shiftSize)
-    @sevThreshold = SEV_DEBUG
-    @kCode = nil
-    @datetimeFormat = nil
+  def initialize(logdev, shift_age = 0, shift_size = 1048576)
+    @prog_name = nil
+    @logdev = LogDevice.new(logdev, :shift_age => shift_age, :shift_size => shift_size)
+    @sev_threshold = SEV_DEBUG
+    @kcode = nil
+    @datetime_format = nil
   end
 
   # SYNOPSIS
-  #   Logger#add(severity, msg = nil, progName = nil) { ... } = nil
+  #   Logger#add(severity, msg = nil, prog_name = nil) { ... } = nil
   #
   # ARGS
   #   severity	Severity.  Constants are defined in Devel::Logger namespace.
   #		SEV_DEBUG, SEV_INFO, SEV_WARN, SEV_ERROR, SEV_CAUTION,
   #		SEV_FATAL, or SEV_UNKNOWN.
   #   msg	Message.  A string, exception, or something. Can be omitted.
-  #   progName	Program name string.  Can be omitted.
+  #   prog_name	Program name string.  Can be omitted.
   #   		Logged as a msg if no msg and block are given.
   #   block     Can be omitted.
   #             Called to get a message string if msg is nil.
@@ -191,19 +192,19 @@ public
   #   Append open does not need to lock file.
   #   But on the OS which supports multi I/O, records possibly be mixed.
   #
-  def add(severity, msg = nil, progName = nil, &block)
+  def add(severity, msg = nil, prog_name = nil, &block)
     severity ||= SEV_UNKNOWN
-    if @logDev.nil? or severity < @sevThreshold
+    if @logdev.nil? or severity < @sev_threshold
       return true
     end
-    progName ||= @progName
+    prog_name ||= @prog_name
 
     if msg.nil?
       if block_given?
 	msg = yield
       else
-	msg = progName
-	progName = @progName
+	msg = prog_name
+	prog_name = @prog_name
       end
     end
 
@@ -214,26 +215,26 @@ public
       msg = msg.inspect
     end
 
-    severityLabel = formatSeverity(severity)
-    timestamp = formatDatetime(Time.now)
-    msg = formatComment(msg)
-    message = formatMessage(severityLabel, timestamp, msg, progName)
-    @logDev.write(message)
+    severity_label = format_severity(severity)
+    timestamp = format_datetime(Time.now)
+    msg = format_comment(msg)
+    message = format_message(severity_label, timestamp, msg, prog_name)
+    @logdev.write(message)
     true
   end
   alias log add
 
   # SYNOPSIS
-  #   Logger#debug(progName = nil) { ... } = nil
-  #   Logger#info(progName = nil) { ... } = nil
-  #   Logger#warn(progName = nil) { ... } = nil
-  #   Logger#error(progName = nil) { ... } = nil
-  #   Logger#caution(progName = nil) { ... } = nil
-  #   Logger#fatal(progName = nil) { ... } = nil
-  #   Logger#unknown(progName = nil) { ... } = nil
+  #   Logger#debug(prog_name = nil) { ... } = nil
+  #   Logger#info(prog_name = nil) { ... } = nil
+  #   Logger#warn(prog_name = nil) { ... } = nil
+  #   Logger#error(prog_name = nil) { ... } = nil
+  #   Logger#caution(prog_name = nil) { ... } = nil
+  #   Logger#fatal(prog_name = nil) { ... } = nil
+  #   Logger#unknown(prog_name = nil) { ... } = nil
   #
   # ARGS
-  #   progName	Program name string.  Can be omitted.
+  #   prog_name	Program name string.  Can be omitted.
   #   		Logged as a msg if no block are given.
   #   block     Can be omitted.
   #             Called to get a message string if msg is nil.
@@ -244,32 +245,32 @@ public
   # DESCRIPTION
   #   Log a log.
   #
-  def debug(progName = nil, &block)
-    add(SEV_DEBUG, nil, progName, &block)
+  def debug(prog_name = nil, &block)
+    add(SEV_DEBUG, nil, prog_name, &block)
   end
 
-  def info(progName = nil, &block)
-    add(SEV_INFO, nil, progName, &block)
+  def info(prog_name = nil, &block)
+    add(SEV_INFO, nil, prog_name, &block)
   end
 
-  def warn(progName = nil, &block)
-    add(SEV_WARN, nil, progName, &block)
+  def warn(prog_name = nil, &block)
+    add(SEV_WARN, nil, prog_name, &block)
   end
 
-  def error(progName = nil, &block)
-    add(SEV_ERROR, nil, progName, &block)
+  def error(prog_name = nil, &block)
+    add(SEV_ERROR, nil, prog_name, &block)
   end
 
-  def caution(progName = nil, &block)
-    add(SEV_CAUTION, nil, progName, &block)
+  def caution(prog_name = nil, &block)
+    add(SEV_CAUTION, nil, prog_name, &block)
   end
 
-  def fatal(progName = nil, &block)
-    add(SEV_FATAL, nil, progName, &block)
+  def fatal(prog_name = nil, &block)
+    add(SEV_FATAL, nil, prog_name, &block)
   end
 
-  def unknown(progName = nil, &block)
-    add(SEV_UNKNOWN, nil, progName, &block)
+  def unknown(prog_name = nil, &block)
+    add(SEV_UNKNOWN, nil, prog_name, &block)
   end
 
   # SYNOPSIS
@@ -279,27 +280,27 @@ public
   #   Close the logging device.
   #
   def close
-    @logDev.close
+    @logdev.close
   end
 
   # SYNOPSIS
-  #   Logger#kCode=
+  #   Logger#kcode=
   #
   # ARGS
-  #   newKCode		Kconv::EUC, Kconv::JIS, or Kcode::SJIS.
+  #   kcode		Kconv::EUC, Kconv::JIS, or Kcode::SJIS.
   #
   # DESCRIPTION
   #   Set Japanese Kanji characters' encoding scheme of logfile.
-  #   Once kCode is set, Logger tries to convert message's encoding scheme
+  #   Once kcode is set, Logger tries to convert message's encoding scheme
   #   when logging new message.
   #
-  def kCode=(newKCode)
+  def kcode=(kcode)
     require 'kconv'
-    @kCode = newKCode
+    @kcode = kcode
   end
 
-  def kCode
-    @kCode
+  def kcode
+    @kcode
   end
 
 private
@@ -307,29 +308,29 @@ private
   # Severity label for logging. (max 5 char)
   SEV_LABEL = %w(DEBUG INFO WARN ERROR CAUTN FATAL ANY);
 
-  def formatSeverity(severity)
+  def format_severity(severity)
     SEV_LABEL[severity] || 'UNKNOWN'
   end
 
-  def formatDatetime(dateTime)
-    if @datetimeFormat.nil?
-      dateTime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d" % dateTime.usec
+  def format_datetime(datetime)
+    if @datetime_format.nil?
+      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d" % datetime.usec
     else
-      dateTime.strftime(@datetimeFormat)
+      datetime.strftime(@datetime_format)
     end
   end
 
-  def formatComment(msg)
+  def format_comment(msg)
     # Japanese Kanji char code conversion.
-    if @kCode && (Kconv::guess(msg) != @kCode)
-      msg = Kconv::kconv(msg, @kCode, Kconv::AUTO)
+    if @kcode && (Kconv::guess(msg) != @kcode)
+      msg = Kconv::kconv(msg, @kcode, Kconv::AUTO)
     end
     msg
   end
 
-  def formatMessage(severity, timestamp, msg, progName)
+  def format_message(severity, timestamp, msg, prog_name)
     line = '%s, [%s #%d] %5s -- %s: %s' << "\n"
-    line % [severity[0..0], timestamp, $$, severity, progName || '-', msg]
+    line % [severity[0..0], timestamp, $$, severity, prog_name || '-', msg]
   end
 end
 
@@ -339,7 +340,8 @@ end
 
 class LogDevice
   attr_reader :dev
-  attr_reader :fileName
+  attr_reader :filename
+  alias fileName filename
 
   # SYNOPSIS
   #   Logger::LogDev.new(name, opt = {})
@@ -354,26 +356,26 @@ class LogDevice
   #   Log device class. Output and shifting of log.
   #
   # OPTIONS
-  #   :shiftAge
+  #   :shift_age
   #     An Integer	Num of files you want to keep aged logs.
   #	  'daily'	Daily shifting.
   #	  'weekly'	Weekly shifting (Shift every monday.)
   #	  'monthly'	Monthly shifting (Shift every 1th day.)
   #
-  #   :shiftSize	Shift size threshold when :shiftAge is an integer.
+  #   :shift_size	Shift size threshold when :shift_age is an integer.
   #			Otherwise (like 'daily'), it is ignored.
   #
   def initialize(log = nil, opt = {})
-    @dev = @fileName = @shiftAge = @shiftSize = nil
+    @dev = @filename = @shift_age = @shift_size = nil
     if (log.is_a?(IO))
       # IO was given. Use it as a log device.
       @dev = log
     elsif (log.is_a?(String))
       # String was given. Open the file as a log device.
-      @dev = openLogFile(log)
-      @fileName = log
-      @shiftAge = opt[:shiftAge] || 7
-      @shiftSize = opt[:shiftSize] || 1048576
+      @dev = open_logfile(log)
+      @filename = log
+      @shift_age = opt[:shift_age] || 7
+      @shift_size = opt[:shift_size] || 1048576
     else
       raise ArgumentError.new("Wrong argument: #{ log } for log.")
     end
@@ -392,9 +394,9 @@ class LogDevice
   #  	mixed.
   #
   def write(message)
-    if shiftLog?
+    if shift_log?
       begin
-	shiftLog
+	shift_log
       rescue
 	raise Logger::ShiftingError.new("Shifting failed. #{$!}")
       end
@@ -415,21 +417,21 @@ class LogDevice
 
 private
 
-  def openLogFile(fileName)
-    if (FileTest.exist?(fileName))
-      open(fileName, (File::WRONLY | File::APPEND))
+  def open_logfile(filename)
+    if (FileTest.exist?(filename))
+      open(filename, (File::WRONLY | File::APPEND))
     else
-      createLogFile(fileName)
+      create_logfile(filename)
     end
   end
 
-  def createLogFile(fileName)
-    logDev = open(fileName, (File::WRONLY | File::APPEND | File::CREAT))
-    addLogHeader(logDev)
-    logDev
+  def create_logfile(filename)
+    logdev = open(filename, (File::WRONLY | File::APPEND | File::CREAT))
+    add_log_header(logdev)
+    logdev
   end
 
-  def addLogHeader(file)
+  def add_log_header(file)
     file.write(
       "# Logfile created on %s by %s\n" % [Time.now.to_s, Logger::ProgName]
    )
@@ -437,17 +439,17 @@ private
 
   SiD = 24 * 60 * 60
 
-  def shiftLog?
-    if !@shiftAge or !@dev.respond_to?(:stat)
+  def shift_log?
+    if !@shift_age or !@dev.respond_to?(:stat)
       return false
     end
-    if (@shiftAge.is_a?(Integer))
+    if (@shift_age.is_a?(Integer))
       # Note: always returns false if '0'.
-      return (@fileName && (@shiftAge > 0) &&
-	(@dev.stat.size > @shiftSize))
+      return (@filename && (@shift_age > 0) &&
+	(@dev.stat.size > @shift_size))
     else
       now = Time.now
-      limitTime = case @shiftAge
+      limit_time = case @shift_age
 	when /^daily$/
 	  eod(now - 1 * SiD)
 	when /^weekly$/
@@ -457,26 +459,26 @@ private
 	else
 	  now
 	end
-      return (@dev.stat.mtime <= limitTime)
+      return (@dev.stat.mtime <= limit_time)
     end
   end
 
-  def shiftLog
+  def shift_log
     # At first, close the device if opened.
     if (@dev)
       @dev.close
       @dev = nil
     end
-    if (@shiftAge.is_a?(Integer))
-      (@shiftAge-3).downto(0) do |i|
-	if (FileTest.exist?("#{@fileName}.#{i}"))
-	  File.rename("#{@fileName}.#{i}", "#{@fileName}.#{i+1}")
+    if (@shift_age.is_a?(Integer))
+      (@shift_age-3).downto(0) do |i|
+	if (FileTest.exist?("#{@filename}.#{i}"))
+	  File.rename("#{@filename}.#{i}", "#{@filename}.#{i+1}")
   	end
       end
-      File.rename("#{@fileName}", "#{@fileName}.0")
+      File.rename("#{@filename}", "#{@filename}.0")
     else
       now = Time.now
-      postfixTime = case @shiftAge
+      postfix_time = case @shift_age
 	when /^daily$/
 	  eod(now - 1 * SiD)
 	when /^weekly$/
@@ -486,15 +488,15 @@ private
 	else
 	  now
 	end
-      postfix = postfixTime.strftime("%Y%m%d")	# YYYYMMDD
-      ageFile = "#{@fileName}.#{postfix}"
-      if (FileTest.exist?(ageFile))
-	raise RuntimeError.new("'#{ ageFile }' already exists.")
+      postfix = postfix_time.strftime("%Y%m%d")	# YYYYMMDD
+      age_file = "#{@filename}.#{postfix}"
+      if (FileTest.exist?(age_file))
+	raise RuntimeError.new("'#{ age_file }' already exists.")
       end
-      File.rename("#{@fileName}", ageFile)
+      File.rename("#{@filename}", age_file)
     end
 
-    @dev = createLogFile(@fileName)
+    @dev = create_logfile(@filename)
     return true
   end
 
@@ -514,40 +516,42 @@ end
 #
 # EXAMPLE
 #   class FooApp < Application
-#     def initialize(fooApp, applicationSpecific, arguments)
+#     def initialize(foo_app, application_specific, arguments)
 #       super('FooApp') # Name of the application.
 #     end
 #
 #     def run
 #       ...
-#       log(SEV_WARN, 'warning', 'myMethod1')
+#       log(SEV_WARN, 'warning', 'my_method1')
 #       ...
-#       @log.error('myMethod2') { 'Error!' }
+#       @log.error('my_method2') { 'Error!' }
 #       ...
 #     end
 #   end
 #
-#   statusCode = FooApp.new(....).start
+#   status = FooApp.new(....).start
 #
 class Application
   include Devel::Logger::Severity
 
-  attr_reader :appName, :logDev
+  attr_reader :app_name
+  attr_reader :logdev
+  alias logDev logdev
 
   # SYNOPSIS
-  #   Application.new(appName = '')
+  #   Application.new(app_name = '')
   #
   # ARGS
-  #   appName	Name String of the application.
+  #   app_name	Name String of the application.
   #
   # DESCRIPTION
   #   Create an instance.  Log device is STDERR by default.
   #
-  def initialize(appName = nil)
-    @appName = appName
+  def initialize(app_name = nil)
+    @app_name = app_name
     @log = Devel::Logger.new(STDERR)
-    @log.progName = @appName
-    @sevThreshold = @log.sevThreshold
+    @log.prog_name = @app_name
+    @sev_threshold = @log.sev_threshold
   end
 
   # SYNOPSIS
@@ -562,18 +566,18 @@ class Application
   def start
     status = -1
     begin
-      log(SEV_INFO, "Start of #{ @appName }.")
+      log(SEV_INFO, "Start of #{ @app_name }.")
       status = run
     rescue
       log(SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.class})\n" << $@.join("\n"))
     ensure
-      log(SEV_INFO, "End of #{ @appName }. (status: #{ status.to_s })")
+      log(SEV_INFO, "End of #{ @app_name }. (status: #{ status.to_s })")
     end
     status
   end
 
   # SYNOPSIS
-  #   Application#setLog(log, shiftAge, shiftSize)
+  #   Application#log=(log, shift_age, shift_size)
   #
   # ARGS
   #   (Args are explained in the class Devel::Logger)
@@ -581,25 +585,27 @@ class Application
   # DESCRIPTION
   #   Set the log device for this application.
   #
-  def setLog(logDev, shiftAge = 0, shiftSize = 102400)
-    @log = Devel::Logger.new(logDev, shiftAge, shiftSize)
-    @log.progName = @appName
-    @log.sevThreshold = @sevThreshold
+  def log=(logdev, shift_age = 0, shift_size = 102400)
+    @log = Devel::Logger.new(logdev, shift_age, shift_size)
+    @log.prog_name = @app_name
+    @log.sev_threshold = @sev_threshold
   end
+  alias setLog log=
 
   # SYNOPSIS
-  #   Application#setSevThreshold(severity)
+  #   Application#sev_threshold=(severity)
   #
   # ARGS
-  #   sevThreshold	Severity threshold.
+  #   sev_threshold	Severity threshold.
   #
   # DESCRIPTION
   #   Set severity threshold.
   #
-  def setSevThreshold(sevThreshold)
-    @sevThreshold = sevThreshold
-    @log.sevThreshold = @sevThreshold
+  def sev_threshold=(sev_threshold)
+    @sev_threshold = sev_threshold
+    @log.sev_threshold = @sev_threshold
   end
+  alias setSevThreshold sev_threshold=
 
 protected
 
@@ -622,7 +628,7 @@ protected
   #   Log no message, and returns true.
   #
   def log(severity, message = nil, &block)
-    @log.add(severity, message, @appName, &block) if @log
+    @log.add(severity, message, @app_name, &block) if @log
   end
 
 private
