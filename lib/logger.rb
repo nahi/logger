@@ -1,6 +1,6 @@
 # Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.1 2003/09/17 14:06:25 nahi Exp $
+# $Id: logger.rb,v 1.2 2003/09/18 02:27:58 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -60,7 +60,7 @@
 #   2. Log4r (somewhat) compatible interface.
 #     logger.level = Logger::INFO
 #
-#   DEBUG < INFO < WARN < ERROR < CAUTION < FATAL < UNKNOWN
+#   DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
 #
 # Format.
 #
@@ -71,7 +71,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.1 2003/09/17 14:06:25 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.2 2003/09/18 02:27:58 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -83,9 +83,8 @@ class Logger
     INFO = 1
     WARN = 2
     ERROR = 3
-    CAUTION = 4
-    FATAL = 5
-    UNKNOWN = 6
+    FATAL = 4
+    UNKNOWN = 5
   end
   include Severity
 
@@ -101,7 +100,11 @@ class Logger
   alias sev_threshold level
   alias sev_threshold= level=
 
-public
+  def debug?; @level <= DEBUG; end
+  def info?; @level <= INFO; end
+  def warn?; @level <= WARN; end
+  def error?; @level <= ERROR; end
+  def fatail?; @level <= FATAL; end
 
   # SYNOPSIS
   #   Logger.new(name, shift_age = 7, shift_size = 1048576)
@@ -121,10 +124,11 @@ public
   #   Create an instance.
   #
   def initialize(logdev, shift_age = 0, shift_size = 1048576)
+    @logdev = nil
     @progname = nil
-    @logdev = LogDevice.new(logdev, :shift_age => shift_age, :shift_size => shift_size)
     @level = DEBUG
     @datetime_format = nil
+    @logdev = LogDevice.new(logdev, :shift_age => shift_age, :shift_size => shift_size) if logdev
   end
 
   # SYNOPSIS
@@ -132,7 +136,7 @@ public
   #
   # ARGS
   #   severity	Severity.  Constants are defined in Logger namespace.
-  #		DEBUG, INFO, WARN, ERROR, CAUTION, FATAL, or UNKNOWN.
+  #		DEBUG, INFO, WARN, ERROR, FATAL, or UNKNOWN.
   #   msg	Message.  A string, exception, or something. Can be omitted.
   #   progname	Program name string.  Can be omitted.
   #   		Logged as a msg if no msg and block are given.
@@ -183,7 +187,6 @@ public
   #   Logger#info(progname = nil) { ... } = nil
   #   Logger#warn(progname = nil) { ... } = nil
   #   Logger#error(progname = nil) { ... } = nil
-  #   Logger#caution(progname = nil) { ... } = nil
   #   Logger#fatal(progname = nil) { ... } = nil
   #   Logger#unknown(progname = nil) { ... } = nil
   #
@@ -215,10 +218,6 @@ public
     add(ERROR, nil, progname, &block)
   end
 
-  def caution(progname = nil, &block)
-    add(CAUTION, nil, progname, &block)
-  end
-
   def fatal(progname = nil, &block)
     add(FATAL, nil, progname, &block)
   end
@@ -234,13 +233,13 @@ public
   #   Close the logging device.
   #
   def close
-    @logdev.close
+    @logdev.close if @logdev
   end
 
 private
 
   # Severity label for logging. (max 5 char)
-  SEV_LABEL = %w(DEBUG INFO WARN ERROR CAUTN FATAL ANY);
+  SEV_LABEL = %w(DEBUG INFO WARN ERROR FATAL ANY);
 
   def format_severity(severity)
     SEV_LABEL[severity] || 'UNKNOWN'
@@ -260,12 +259,14 @@ private
   end
 
   def msg2str(msg)
-    if msg.is_a?(::Exception)
-      "#{ msg.message } (#{ msg.class })\n" << (msg.backtrace || []).join("\n")
-    elsif !msg.is_a?(::String)
-      msg.inspect
-    else
+    if msg.is_a?(::String)
       msg
+    elsif msg.is_a?(::Exception)
+      "#{ msg.message } (#{ msg.class })\n" << (msg.backtrace || []).join("\n")
+    elsif msg.respond_to?(:to_str)
+      msg.to_str
+    else
+      msg.inspect
     end
   end
 
@@ -299,10 +300,10 @@ private
     #
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
-      if (log.is_a?(IO))
+      if log.is_a?(IO)
 	# IO was given. Use it as a log device.
 	@dev = log
-      elsif (log.is_a?(String))
+      elsif log.is_a?(String)
 	# String was given. Open the file as a log device.
 	@dev = open_logfile(log)
 	@filename = log
@@ -312,7 +313,7 @@ private
 	raise ArgumentError.new("Wrong argument: #{ log } for log.")
       end
     end
-  
+
     # SYNOPSIS
     #   Logger::LogDev#write(message)
     #
@@ -333,10 +334,10 @@ private
   	  raise Logger::ShiftingError.new("Shifting failed. #{$!}")
    	end
       end
-  
+
       @dev.write(message) 
     end
-  
+
     # SYNOPSIS
     #   Logger::LogDev#close
     #
@@ -346,9 +347,9 @@ private
     def close
       @dev.close
     end
-  
+
   private
-  
+
     def open_logfile(filename)
       if (FileTest.exist?(filename))
      	open(filename, (File::WRONLY | File::APPEND))
@@ -356,29 +357,28 @@ private
        	create_logfile(filename)
       end
     end
-  
+
     def create_logfile(filename)
       logdev = open(filename, (File::WRONLY | File::APPEND | File::CREAT))
       add_log_header(logdev)
       logdev
     end
-  
+
     def add_log_header(file)
       file.write(
      	"# Logfile created on %s by %s\n" % [Time.now.to_s, Logger::ProgName]
     )
     end
-  
+
     SiD = 24 * 60 * 60
-  
+
     def shift_log?
       if !@shift_age or !@dev.respond_to?(:stat)
      	return false
       end
       if (@shift_age.is_a?(Integer))
 	# Note: always returns false if '0'.
-	return (@filename && (@shift_age > 0) &&
-	  (@dev.stat.size > @shift_size))
+	return (@filename && (@shift_age > 0) && (@dev.stat.size > @shift_size))
       else
 	now = Time.now
 	limit_time = case @shift_age
@@ -394,10 +394,10 @@ private
 	return (@dev.stat.mtime <= limit_time)
       end
     end
-  
+
     def shift_log
       # At first, close the device if opened.
-      if (@dev)
+      if @dev
       	@dev.close
        	@dev = nil
       end
@@ -427,11 +427,11 @@ private
 	end
 	File.rename("#{@filename}", age_file)
       end
-  
+
       @dev = create_logfile(@filename)
       return true
     end
-  
+
     def eod(t)
       Time.mktime(t.year, t.month, t.mday, 23, 59, 59)
     end
@@ -465,10 +465,10 @@ private
   #
   class Application
     include Logger::Severity
-  
+
     attr_reader :appname
     attr_reader :logdev
-  
+
     # SYNOPSIS
     #   Application.new(appname = '')
     #
@@ -484,7 +484,7 @@ private
       @log.progname = @appname
       @level = @log.level
     end
-  
+
     # SYNOPSIS
     #   Application#start
     #
@@ -506,7 +506,7 @@ private
       end
       status
     end
-  
+
     # SYNOPSIS
     #   Application#log=(log, shift_age, shift_size)
     #
@@ -521,7 +521,7 @@ private
       @log.progname = @appname
       @log.level = @level
     end
-  
+
     # SYNOPSIS
     #   Application#level=(severity)
     #
@@ -535,9 +535,9 @@ private
       @level = level
       @log.level = @level
     end
-  
+
   protected
-  
+
     # SYNOPSIS
     #   Application#log(severity, comment = nil) { ... }
     #
@@ -559,9 +559,9 @@ private
     def log(severity, message = nil, &block)
       @log.add(severity, message, @appname, &block) if @log
     end
-  
+
   private
-  
+
     def run
       raise RuntimeError.new('Method run must be defined in the derived class.')
     end

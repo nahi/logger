@@ -13,13 +13,6 @@ module Devel
       SEV_UNKNOWN = 6
     end
     include Severity
-
-    def debug?; @level >= DEBUG; end
-    def info?; @level >= INFO; end
-    def warn?; @level >= WARN; end
-    def error?; @level >= ERROR; end
-    def caution?; @level >= CAUTION; end
-    def fatail?; @level >= FATAL; end
   end
   LogDevice = ::Logger::LogDevice
   class Application < ::Logger::Application
