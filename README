@@ -1,11 +1,12 @@
 devel-logger -- Log dumping utility.
-  version 1.2.2
+  version 1.2.4
 
 What is this?
   Logging utility.
 
 Get started.
-  See "sample" directory.  Samples should run before installing this package.
+  See "sample" directory.  Samples should be able to run fine before installing
+  the package.
 
 How to install.
   Try;
@@ -18,7 +19,10 @@ AUTHOR
   NAKAMURA, Hiroshi a.k.a. NaHi
   nakahiro@sarion.co.jp
 
+  Documentation: NAKAMURA, Hiroshi and Gavin Sinclair
+
 LEGAL NOTICE
   Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi
-  This module is copyrighted free software by NAKAMURA, Hiroshi.
-  You can redistribute it and/or modify it under the same term as Ruby.
+  This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
+  redistribute it and/or modify it under the same terms of Ruby's license;
+  either the dual license version in 2003, or any later version.
