@@ -11,9 +11,8 @@ def do_log(log)
   log.info('do_log2') { "info" }
   log.warn('do_log3') { "warn" }
   log.error('do_log4') { "error" }
-  log.caution('do_log5') { "caution" }
-  log.fatal('do_log6') { "fatal" }
-  log.unknown('do_log7') { "unknown" }
+  log.fatal('do_log5') { "fatal" }
+  log.unknown('do_log6') { "unknown" }
 end
 
 log.level = Logger::DEBUG	# Default.

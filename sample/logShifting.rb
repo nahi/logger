@@ -16,9 +16,8 @@ def do_log(log)
   log.info('do_log2') { 'i' * rand(100) }
   log.warn('do_log3') { 'w' * rand(100) }
   log.error('do_log4') { 'e' * rand(100) }
-  log.caution('do_log5') { 'c' * rand(100) }
-  log.fatal('do_log6') { 'f' * rand(100) }
-  log.unknown('do_log7') { 'u' * rand(100) }
+  log.fatal('do_log5') { 'f' * rand(100) }
+  log.unknown('do_log6') { 'u' * rand(100) }
 end
 
 (1..10).each do
