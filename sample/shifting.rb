@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 
-$:.unshift(File.join('..', 'lib'))
 require 'logger'
 
-logfile = File.join('logs', 'logShifting.log')
+logfile = 'shifting.log'
 # Max 3 age ... logShifting.log, logShifting.log.0, and logShifting.log.1
 shift_age = 3
 # Shift log file about for each 1024 bytes.
@@ -24,4 +23,4 @@ end
   do_log(log)
 end
 
-puts 'See logShifting.* in "logs" directory.'
+puts 'See shifting.log and shifting.log.[01].'

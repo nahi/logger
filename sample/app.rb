@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-$:.unshift(File.join('..', 'lib'))
 require 'logger'
 
 class MyApp < Logger::Application
@@ -8,7 +7,7 @@ class MyApp < Logger::Application
     super('MyApp')
 
     # Set logDevice here.
-    logfile = File.join('logs', 'app.log')
+    logfile = 'app.log'
     self.log = logfile
     self.level = INFO
 
@@ -43,5 +42,5 @@ status = MyApp.new(1, 2, 3).start
 
 if status != 0
   puts 'Some error(s) occured.'
-  puts 'See "app.log" in "logs" directory.'
+  puts 'See "app.log".'
 end

@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-$:.unshift(File.join('..', 'lib'))
 require 'logger'
 
 log = Logger.new(STDERR)
