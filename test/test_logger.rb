@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'logger'
 
+
 class TestLoggerSeverity < Test::Unit::TestCase
   def test_enum
     logger_levels = Logger.constants
@@ -228,5 +229,52 @@ class TestLogger < Test::Unit::TestCase
     msg = r.read
     r.close
     assert_equal("msg2\n\n", msg)
+  end
+end
+
+class TestLogDevice < Test::Unit::TestCase
+  def d(log)
+    Logger::LogDevice.new(log)
+  end
+
+  def test_initialize
+    logdev = d(STDERR)
+    assert_equal(STDERR, logdev.dev)
+    assert_nil(logdev.filename)
+    assert_raises(ArgumentError) do
+      d(nil)
+    end
+    #
+    filename = __FILE__ + ".#{$$}"
+    begin
+      logdev = d(filename)
+      assert(File.exist?(filename))
+      assert(logdev.dev.sync)
+      assert_equal(filename, logdev.filename)
+    ensure
+      File.unlink(filename)
+    end
+  end
+
+  def test_write
+    r, w = IO.pipe
+    logdev = d(w)
+    logdev.write("msg2\n\n")
+    read_ready, = IO.select([r], nil, nil, 0.1)
+    w.close
+    msg = r.read
+    r.close
+    assert_equal("msg2\n\n", msg)
+  end
+
+  def test_close
+    r, w = IO.pipe
+    logdev = d(w)
+    logdev.write("msg2\n\n")
+    read_ready, = IO.select([r], nil, nil, 0.1)
+    assert(!w.closed?)
+    logdev.close
+    assert(w.closed?)
+    r.close
   end
 end
