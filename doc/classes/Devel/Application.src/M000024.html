@@ -9,7 +9,7 @@
 </style>
 </head>
 <body bgcolor="white">
-<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 543</span>
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 542</span>
   <span class="kw">def</span> start
     status = -1
     <span class="kw">begin</span>
@@ -18,7 +18,7 @@
     <span class="kw">rescue</span>
       log( SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.type})\n" << $@.join( <span class="str">"\n"</span> ))
     <span class="kw">ensure</span>
-      log( SEV_INFO, "End of #{ @appName }. (status: #{ @status.to_s })" )
+      log( SEV_INFO, "End of #{ @appName }. (status: #{ status.to_s })" )
     <span class="kw">end</span>
     status
   <span class="kw">end</span></pre>

@@ -9,9 +9,10 @@
 </style>
 </head>
 <body bgcolor="white">
-<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 565</span>
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 564</span>
   <span class="kw">def</span> setLog( logDev, shiftAge = 0, shiftSize = 102400 )
     @log = Devel::Logger.new( logDev, shiftAge, shiftSize )
+    @log.sevThreshold = @sevThreshold
   <span class="kw">end</span></pre>
 </body>
 </html>

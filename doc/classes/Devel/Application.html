@@ -51,6 +51,9 @@ Object
   <!-- banner header -->
 
 
+
+
+
 <div class="description"><td>DESCRIPTION
 
 <pre>
@@ -91,7 +94,6 @@ EXAMPLE
 
 
 
-</div>
 
 
 <table cellpadding=5 width="100%">
@@ -100,6 +102,7 @@ EXAMPLE
 <div class="name-list">
 <a href="#M000023">new</a>&nbsp; &nbsp;
 <a href="#M000025">setLog</a>&nbsp; &nbsp;
+<a href="#M000026">setSevThreshold</a>&nbsp; &nbsp;
 <a href="#M000024">start</a>&nbsp; &nbsp;
 
 </div>
@@ -117,11 +120,6 @@ EXAMPLE
      </tr>
      <tr valign="top">
        <td class="attr-name">logDev</td>
-       <td align="center" class="attr-rw">&nbsp;[R]&nbsp;</td>
-       <td></td>
-     </tr>
-     <tr valign="top">
-       <td class="attr-name">status</td>
        <td align="center" class="attr-rw">&nbsp;[R]&nbsp;</td>
        <td></td>
      </tr>
@@ -251,6 +249,40 @@ DESCRIPTION
 
 <pre>
   Set the log device for this application.
+</pre>
+<p>
+
+</div>
+<table width="100%" cellspacing = 0 cellpadding=5 border=0>
+<tr><td class="methodtitle">
+<a name="M000026">
+
+<a href="Application.src/M000026.html" target="Code" class="methodtitle"
+ onClick="popCode('Application.src/M000026.html');return 0;">
+
+<b>setSevThreshold</b>( sevThreshold )
+
+</a>
+
+</a></td></tr>
+</table>
+<div class="description">
+SYNOPSIS
+
+<pre>
+  Application#setSevThreshold( severity )
+</pre>
+<p>
+ARGS
+
+<pre>
+  sevThreshold        Severity threshold.
+</pre>
+<p>
+DESCRIPTION
+
+<pre>
+  Set severity threshold.
 </pre>
 <p>
 
