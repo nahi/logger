@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.10 2000/04/24 08:12:59 nakahiro Exp $
+# $Id: application.rb,v 1.11 2000/10/14 06:33:08 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -264,7 +264,7 @@ class Log # throw Log::Error
     file.syswrite( "# Logfile created on %s by %s\n" % [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.10 2000/04/24 08:12:59 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.11 2000/10/14 06:33:08 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -335,7 +335,7 @@ class Application
       log( SEV_INFO, "Start of #{ @appName }." )
       @status = run()
     rescue
-      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!}\n" << $@.join( "\n" ))
+      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.type})\n" << $@.join( "\n" ))
     ensure
       log( SEV_INFO, "End of #{ @appName }. (status: #{ @status.to_s })" )
     end
