@@ -27,7 +27,7 @@
 
         <a href="../../files/devel/logger_rb.html" class="aqua">
 
-/home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb
+/usr/local/lib/ruby/site_ruby/1.7/devel/logger.rb
 
          </a>
 
@@ -50,6 +50,15 @@ Object
 </table>
   <!-- banner header -->
 
+
+<table width="100%"><tr><td align="center">
+<map name="map">
+  <area shape="RECT" coords="227,59,299,107"      href="LogDevice.html">
+  <area shape="RECT" coords="131,59,203,107"      href="Logger.html">
+  <area shape="RECT" coords="35,59,107,107"      href="Application.html">
+</map>
+<img src="../../dot/m_0_0.png" usemap="#map" border=0>
+</td></tr></table>
 
 
 
@@ -396,7 +405,7 @@ Interface for Log4r compatibility.
 <a href="Logger.src/M000012.html" target="Code" class="methodtitle"
  onClick="popCode('Logger.src/M000012.html');return 0;">
 
-<b>add</b>( severity, comment = nil, progName = nil, &amp;block ) {|| ...}
+<b>add</b>( severity, msg = nil, progName = nil, &amp;block ) {|| ...}
 
 </a>
 
@@ -406,7 +415,7 @@ Interface for Log4r compatibility.
 SYNOPSIS
 
 <pre>
-  Logger#add( severity, comment = nil, progName = nil ) { ... } = nil
+  Logger#add( severity, msg = nil, progName = nil ) { ... } = nil
 </pre>
 <p>
 ARGS
@@ -415,11 +424,11 @@ ARGS
   severity    Severity.  Constants are defined in Devel::Logger namespace.
               SEV_DEBUG, SEV_INFO, SEV_WARN, SEV_ERROR, SEV_CAUTION,
               SEV_FATAL, or SEV_UNKNOWN.
-  comment     Message string.  Can be omitted.
+  msg Message.  A string, exception, or something. Can be omitted.
   progName    Program name string.  Can be omitted.
-              Logged as a comment if no comment and block are given.
+              Logged as a msg if no msg and block are given.
   block     Can be omitted.
-            Called to get a message string if comment is nil.
+            Called to get a message string if msg is nil.
 </pre>
 <p>
 RETURN
@@ -476,9 +485,9 @@ ARGS
 
 <pre>
   progName    Program name string.  Can be omitted.
-              Logged as a comment if no block are given.
+              Logged as a msg if no block are given.
   block     Can be omitted.
-            Called to get a message string if comment is nil.
+            Called to get a message string if msg is nil.
 </pre>
 <p>
 RETURN
