@@ -209,4 +209,24 @@ class TestLogger < Test::Unit::TestCase
     log = log_add(logger, INFO, MyMsg.new)
     assert_equal("my_msg\n", log.msg)
   end
+
+  def test_lshift
+    r, w = IO.pipe
+    logger = Logger.new(w)
+    logger << "msg"
+    read_ready, = IO.select([r], nil, nil, 0.1)
+    w.close
+    msg = r.read
+    r.close
+    assert_equal("msg", msg)
+    #
+    r, w = IO.pipe
+    logger = Logger.new(w)
+    logger << "msg2\n\n"
+    read_ready, = IO.select([r], nil, nil, 0.1)
+    w.close
+    msg = r.read
+    r.close
+    assert_equal("msg2\n\n", msg)
+  end
 end

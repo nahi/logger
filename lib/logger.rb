@@ -1,6 +1,6 @@
 # Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.5 2003/09/20 02:46:56 nahi Exp $
+# $Id: logger.rb,v 1.6 2003/09/23 14:08:58 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -71,7 +71,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.5 2003/09/20 02:46:56 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.6 2003/09/23 14:08:58 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -184,6 +184,24 @@ class Logger
     true
   end
   alias log add
+
+  # SYNOPSIS
+  #   Logger#<<(msg)
+  #
+  # ARGS
+  #   msg	Message.
+  #
+  # RETURN
+  #   Same as IO#<<.  If logdev is not given, returns nil.
+  #
+  # DESCRIPTION
+  #   Dump given message to log device without any formatting.
+  #
+  def <<(msg)
+    unless @logdev.nil?
+      @logdev.write(msg)
+    end
+  end
 
   # SYNOPSIS
   #   Logger#debug(progname = nil) { ... } = nil
