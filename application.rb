@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.9 2000/04/03 11:35:04 nakahiro Exp $
+# $Id: application.rb,v 1.10 2000/04/24 08:12:59 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -59,7 +59,7 @@
 require 'kconv'
 class Log # throw Log::Error
   public
-  class Error < RuntimeError; end
+  class Error < StandardError; end
   class ShiftingError < Error; end
 
   # Logging severity.
@@ -107,7 +107,7 @@ class Log # throw Log::Error
   def add( severity, comment, program = '_unknown_' )
     severity = SEV_UNKNOWN unless severity
     return true if ( severity < @sevThreshold )
-    if ( @logDev.shiftLog? ) then
+    if ( @logDev.shiftLog? )
       begin
       	@logDev.shiftLog
       rescue
@@ -175,9 +175,9 @@ class Log # throw Log::Error
 	now = Time.now
 	limitTime = case @shiftAge
 	  when /^daily$/
-	    eod( now -1 * SiD )
+	    eod( now - 1 * SiD )
 	  when /^weekly$/
-	    eod( now - now.wday * SiD )
+	    eod( now - (( now.wday + 1 ) * SiD ))
 	  when /^monthly$/
 	    eod( now - now.mday * SiD )
 	  else
@@ -189,13 +189,13 @@ class Log # throw Log::Error
 
     def shiftLog
       # At first, close the device if opened.
-      if ( @dev ) then
+      if ( @dev )
 	@dev.close
 	@dev = nil
       end
       if ( @shiftAge.is_a?( Integer ))
         ( @shiftAge-3 ).downto( 0 ) do |i|
-      	  if ( FileTest.exist?( "#{@fileName}.#{i}" )) then
+      	  if ( FileTest.exist?( "#{@fileName}.#{i}" ))
 	    File.rename( "#{@fileName}.#{i}", "#{@fileName}.#{i+1}" )
       	  end
         end
@@ -207,14 +207,18 @@ class Log # throw Log::Error
 	  when /^daily$/
 	    eod( now - 1 * SiD )
 	  when /^weekly$/
-	    eod( now - now.wday * SiD )
+	    eod( now - (( now.wday + 1 ) * SiD ))
 	  when /^monthly$/
 	    eod( now - now.mday * SiD )
 	  else
 	    now
 	  end
 	postfix = postfixTime.strftime( "%Y%m%d" )	# YYYYMMDD
-        File.rename( "#{@fileName}", "#{@fileName}.#{postfix}" )
+	ageFile = "#{@fileName}.#{postfix}"
+	if ( FileTest.exist?( ageFile ))
+	  raise RuntimeError.new( "'#{ ageFile }' already exists." )
+	end
+        File.rename( "#{@fileName}", ageFile )
 	return true
       end
     end
@@ -230,12 +234,12 @@ class Log # throw Log::Error
 
   def initialize( log, shiftAge = 3, shiftSize = 102400 )
     @logDev = nil
-    if ( log.is_a?( IO )) then
+    if ( log.is_a?( IO ))
       # IO was given. Use it as a log device.
       @logDev = LogDev.new( log )
-    elsif ( log.is_a?( String )) then
+    elsif ( log.is_a?( String ))
       # String was given. Open the file as a log device.
-      dev = if ( FileTest.exist?( log.to_s )) then
+      dev = if ( FileTest.exist?( log.to_s ))
           open( log.to_s, ( File::WRONLY | File::APPEND ))
       	else
 	  createLogFile( log.to_s )
@@ -257,11 +261,10 @@ class Log # throw Log::Error
   end
 
   def addLogHeader( file )
-    file.syswrite( "# Logfile created on %s by %s\n" %
-      [ Time.now.to_s, ProgName ])
+    file.syswrite( "# Logfile created on %s by %s\n" % [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.9 2000/04/03 11:35:04 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.10 2000/04/24 08:12:59 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -332,8 +335,7 @@ class Application
       log( SEV_INFO, "Start of #{ @appName }." )
       @status = run()
     rescue
-      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!}\n" <<
-	$@.join( "\n" ))
+      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!}\n" << $@.join( "\n" ))
     ensure
       log( SEV_INFO, "End of #{ @appName }. (status: #{ @status.to_s })" )
     end
