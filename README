@@ -11,12 +11,7 @@ How to install.
   $ ruby install.rb
 
 For more details.
-  See doc/index.html
-
-CREDITS
-  Documents in doc/ are created by RDoc - Documentation from Ruby Source Files.
-  For more details, see http://rdoc.sourceforge.net/
-  Thanks to PragDave, the author of RDoc.
+  See <URL:http://rrr.jin.gr.jp/doc/Devel__Logger/>
 
 AUTHOR
   NAKAMURA, Hiroshi a.k.a. NaHi
