@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.7 2000/03/29 15:25:31 nakahiro Exp $
+# $Id: application.rb,v 1.8 2000/04/03 10:33:50 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -13,8 +13,12 @@
 #   log		String as filename of logging.
 #		  or
 #		IO as logging device(i.e. STDERR).
-#   shiftAge	Num of files you want to keep aged logs.
-#   shiftSize	Shift size threshold.
+#   shiftAge	An Integer	Num of files you want to keep aged logs.
+#		'daily'		Daily shifting.
+#		'weekly'	Weekly shifting (Every monday.)
+#		'monthly'	Monthly shifting (Every 1th day.)
+#   shiftSize	Shift size threshold when shiftAge is an integer.
+#		Otherwise (like 'daily'), shiftSize will be ignored.
 #
 # DESCRIPTION
 #   Log dumping utility class.
@@ -27,6 +31,8 @@
 #
 #   Sample usage1:
 #     file = open( 'foo.log', File::WRONLY | File::APPEND )
+#     # To create new (and to remove old) logfile, add File::CREAT like;
+#     #   file = open( 'foo.log', File::WRONLY | File::APPEND | File::CREAT )
 #     logDev = Log.new( file )
 #     logDev.add( Log::SEV_WARN, 'It is only warning!', 'MyProgram' )
 #   	...
@@ -39,6 +45,12 @@
 #     logDev.close()
 #
 #   Sample usage3:
+#     logDev = Log.new( 'logfile.log', 'weekly' )
+#     logDev.add( Log::SEV_INFO, 'Informational!', 'MyProgram' )
+#   	...
+#     logDev.close()
+#
+#   Sample usage4:
 #     logDev = Log.new( STDERR )
 #     logDev.add( Log::SEV_FATAL, 'It is fatal error...' )
 #     	...
@@ -130,51 +142,76 @@ class Log # throw Log::Error
 
   # Log::LogDev -- log device class. Output and shifting of log.
   class LogDev
+    public
+
     attr( :dev, TRUE )
     attr( :fileName, TRUE )
     attr( :shiftAge, TRUE )
     attr( :shiftSize, TRUE )
 
-    public
-    def write( message )
-      # Maybe OS seeked to the last automatically,
-      #  when the file was opened with append mode...
-      @dev.syswrite( message ) 
-    end
-
-    public
-    def close()
-      @dev.close()
-    end
-
-    public
-    def shiftLog?
-      ( @fileName && ( @shiftAge > 0 ) && ( @dev.stat.size > @shiftSize ))
-    end
-
-    public
-    def shiftLog
-      # At first, close the device if opened.
-      if ( @dev ) then
-	@dev.close
-	@dev = nil
-      end
-      ( @shiftAge-3 ).downto( 0 ) do |i|
-      	if ( FileTest.exist?( "#{@fileName}.#{i}" )) then
-	  File.rename( "#{@fileName}.#{i}", "#{@fileName}.#{i+1}" )
-      	end
-      end
-      File.rename( "#{@fileName}", "#{@fileName}.0" )
-      true
-    end
-
-    private
     def initialize( dev = nil, fileName = nil )
       @dev = dev
       @fileName = fileName
       @shiftAge = nil
       @shiftSize = nil
     end
+
+    def write( message )
+      # Maybe OS seeked to the last automatically,
+      #  when the file was opened with append mode...
+      @dev.syswrite( message ) 
+    end
+
+    def close()
+      @dev.close()
+    end
+
+    def shiftLog?
+      if ( @shiftAge.is_a?( Integer ))
+	# Note: always returns false if '0'.
+        return ( @fileName && ( @shiftAge > 0 ) &&
+	  ( @dev.stat.size > @shiftSize ))
+      elsif ( @dev.stat.mtime.mday != Time.now.mday )
+	case @shiftAge
+	when /^daily$/
+	  return true
+	when /^weekly$/
+	  return ( Time.now.wday == 1 )
+	when /^monthly$/
+	  return ( Time.now.mday == 1 )
+	else
+	  return false
+	end
+	return true
+      else
+	false
+      end
+    end
+
+    def shiftLog
+      # At first, close the device if opened.
+      if ( @dev ) then
+	@dev.close
+	@dev = nil
+      end
+      if ( @shiftAge.is_a?( Integer ))
+        ( @shiftAge-3 ).downto( 0 ) do |i|
+      	  if ( FileTest.exist?( "#{@fileName}.#{i}" )) then
+	    File.rename( "#{@fileName}.#{i}", "#{@fileName}.#{i+1}" )
+      	  end
+        end
+        File.rename( "#{@fileName}", "#{@fileName}.0" )
+	return true
+      else
+	postfix = ( Time.now - SiD ).strftime( "%Y%m%d" ) # YYYYMMDD
+        File.rename( "#{@fileName}", "#{@fileName}.#{postfix}" )
+	return true
+      end
+    end
+
+    private
+
+    SiD = 24 * 60 * 60
   end
 
   def initialize( log, shiftAge = 3, shiftSize = 102400 )
@@ -210,7 +247,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.7 2000/03/29 15:25:31 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.8 2000/04/03 10:33:50 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -254,7 +291,17 @@ end
 class Application
   include Log::Severity
 
+  public
+
   attr_reader :appName, :logDev, :status
+
+  def initialize( name = '' )
+    @appName = name
+    @status = false
+    @logDev = STDERR
+    @shiftAge = 0	# means 'no shifting'
+    @shiftSize = 102400
+  end
 
   # SYNOPSIS
   #   Application.start()
@@ -265,7 +312,6 @@ class Application
   # RETURN
   #   Status code.
   #
-  public
   def start()
     @log = Log.new( @logDev, @shiftAge, @shiftSize )
     begin
@@ -292,7 +338,6 @@ class Application
   # RETURN
   #   Always true.
   #
-  public
   def setLog( log, shiftAge = 0, shiftSize = 102400 )
     @logDev = log
     @shiftAge = shiftAge
@@ -303,15 +348,6 @@ class Application
   protected
   def log( severity, message )
     @log.add( severity, message, @appName )
-  end
-
-  private
-  def initialize( name = '' )
-    @appName = name
-    @status = false
-    @logDev = STDERR
-    @shiftAge = 0	# means 'no shifting'
-    @shiftSize = 102400
   end
 
   # private method 'run' must be defined in derived classes.
