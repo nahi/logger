@@ -16,7 +16,11 @@ def base(name)
 end
 
 begin
-  Dir[ 'lib/*.rb' ].each do | name |
+  File.mkpath(join(DSTPATH, "devel"), true)
+  Dir['lib/devel/*.rb'].each do |name|
+    File.install(name, join(DSTPATH, 'devel', base(name)), 0644, true)
+  end
+  Dir['lib/*.rb'].each do |name|
     File.install(name, join(DSTPATH, base(name)), 0644, true)
   end
 
