@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.15 2003/07/31 15:57:23 nahi Exp $
+# $Id: logger.rb,v 1.16 2003/09/16 13:02:41 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,20 +75,13 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.15 2003/07/31 15:57:23 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.16 2003/09/16 13:02:41 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
   class ShiftingError < Error; end
 
   # Logging severity.
-  #   SEV_DEBUG
-  #   SEV_INFO
-  #   SEV_WARN
-  #   SEV_ERROR
-  #   SEV_CAUTION
-  #   SEV_FATAL
-  #   SEV_UNKNOWN
   module Severity
     SEV_DEBUG = 0
     SEV_INFO = 1
@@ -129,15 +122,15 @@ class Logger
   alias level= sev_threshold=
 
   # Interface for Log4r compatibility.
-  def debug?;  @logdev and SEV_DEBUG >= @sev_threshold; end
+  def debug?; @logdev and SEV_DEBUG >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def info?;   @logdev and SEV_INFO  >= @sev_threshold; end
+  def info?;  @logdev and SEV_INFO  >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def warn?;   @logdev and SEV_WARN  >= @sev_threshold; end
+  def warn?;  @logdev and SEV_WARN  >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def error?;  @logdev and SEV_ERROR >= @sev_threshold; end
+  def error?; @logdev and SEV_ERROR >= @sev_threshold; end
   # Interface for Log4r compatibility.
-  def fatal?;  @logdev and SEV_FATAL >= @sev_threshold; end
+  def fatal?; @logdev and SEV_FATAL >= @sev_threshold; end
 
 public
 
@@ -162,7 +155,6 @@ public
     @prog_name = nil
     @logdev = LogDevice.new(logdev, :shift_age => shift_age, :shift_size => shift_size)
     @sev_threshold = SEV_DEBUG
-    @kcode = nil
     @datetime_format = nil
   end
 
@@ -209,15 +201,13 @@ public
     end
 
     if msg.is_a?(::Exception)
-      msg = "#{ msg.message } (#{ msg.class })\n" <<
-	(msg.backtrace || []).join("\n")
+      msg = "#{ msg.message } (#{ msg.class })\n" << (msg.backtrace || []).join("\n")
     elsif !msg.is_a?(::String)
       msg = msg.inspect
     end
 
     severity_label = format_severity(severity)
     timestamp = format_datetime(Time.now)
-    msg = format_comment(msg)
     message = format_message(severity_label, timestamp, msg, prog_name)
     @logdev.write(message)
     true
@@ -283,26 +273,6 @@ public
     @logdev.close
   end
 
-  # SYNOPSIS
-  #   Logger#kcode=
-  #
-  # ARGS
-  #   kcode		Kconv::EUC, Kconv::JIS, or Kcode::SJIS.
-  #
-  # DESCRIPTION
-  #   Set Japanese Kanji characters' encoding scheme of logfile.
-  #   Once kcode is set, Logger tries to convert message's encoding scheme
-  #   when logging new message.
-  #
-  def kcode=(kcode)
-    require 'kconv'
-    @kcode = kcode
-  end
-
-  def kcode
-    @kcode
-  end
-
 private
 
   # Severity label for logging. (max 5 char)
@@ -318,14 +288,6 @@ private
     else
       datetime.strftime(@datetime_format)
     end
-  end
-
-  def format_comment(msg)
-    # Japanese Kanji char code conversion.
-    if @kcode && (Kconv::guess(msg) != @kcode)
-      msg = Kconv::kconv(msg, @kcode, Kconv::AUTO)
-    end
-    msg
   end
 
   def format_message(severity, timestamp, msg, prog_name)
