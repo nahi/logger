@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.6 2002/01/31 09:26:08 nakahiro Exp $
+# $Id: logger.rb,v 1.7 2002/02/01 01:24:46 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.6 2002/01/31 09:26:08 nakahiro Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.7 2002/02/01 01:24:46 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -159,17 +159,17 @@ public
   end
 
   # SYNOPSIS
-  #   Logger#add( severity, comment = nil, progName = nil ) { ... } = nil
+  #   Logger#add( severity, msg = nil, progName = nil ) { ... } = nil
   #
   # ARGS
   #   severity	Severity.  Constants are defined in Devel::Logger namespace.
   #		SEV_DEBUG, SEV_INFO, SEV_WARN, SEV_ERROR, SEV_CAUTION,
   #		SEV_FATAL, or SEV_UNKNOWN.
-  #   comment	Message string.  Can be omitted.
+  #   msg	Message.  A string, exception, or something. Can be omitted.
   #   progName	Program name string.  Can be omitted.
-  #   		Logged as a comment if no comment and block are given.
+  #   		Logged as a msg if no msg and block are given.
   #   block     Can be omitted.
-  #             Called to get a message string if comment is nil.
+  #             Called to get a message string if msg is nil.
   #
   # RETURN
   #   true if succeed, false if failed.
@@ -184,30 +184,33 @@ public
   #   Append open does not need to lock file.
   #   But on the OS which supports multi I/O, records possibly be mixed.
   #
-  def add( severity, comment = nil, progName = nil, &block )
+  def add( severity, msg = nil, progName = nil, &block )
     severity ||= SEV_UNKNOWN
     if @logDev.nil? or severity < @sevThreshold
       return true
     end
     progName ||= @progName
 
-    if comment.nil?
+    if msg.nil?
       if block_given?
-	comment = yield
+	msg = yield
       else
-	comment = progName || "(empty message)"
+	msg = progName
 	progName = @progName
       end
     end
 
-    if !comment.is_a?( ::String )
-      comment = comment.inspect
+    if msg.is_a?( ::Exception )
+      msg = "#{ msg.message } (#{ msg.type })\n" <<
+	( msg.backtrace || [] ).join( "\n" )
+    elsif !msg.is_a?( ::String )
+      msg = msg.inspect
     end
 
     severityLabel = formatSeverity( severity )
     timestamp = formatDatetime( Time.now )
-    comment = formatComment( comment )
-    message = formatMessage( severityLabel, timestamp, comment, progName )
+    msg = formatComment( msg )
+    message = formatMessage( severityLabel, timestamp, msg, progName )
     @logDev.write( message )
     true
   end
@@ -223,9 +226,9 @@ public
   #
   # ARGS
   #   progName	Program name string.  Can be omitted.
-  #   		Logged as a comment if no block are given.
+  #   		Logged as a msg if no block are given.
   #   block     Can be omitted.
-  #             Called to get a message string if comment is nil.
+  #             Called to get a message string if msg is nil.
   #
   # RETURN
   #   See Devel::Logger#add .
@@ -304,20 +307,17 @@ private
     dateTime.to_s << ' ' << "%6d" % dateTime.usec
   end
 
-  def formatComment( comment )
-    # Remove white characters at the end of line.
-    comment = comment.sub( '/[ \t\r\f\n]*$/', '' )
+  def formatComment( msg )
     # Japanese Kanji char code conversion.
-    if @kCode && ( Kconv::guess( comment ) != @kCode )
-      comment = Kconv::kconv( comment, @kCode, Kconv::AUTO )
+    if @kCode && ( Kconv::guess( msg ) != @kCode )
+      msg = Kconv::kconv( msg, @kCode, Kconv::AUTO )
     end
-    comment
+    msg
   end
 
-  def formatMessage( severity, timestamp, comment, progName )
-    message = '%s, [%s #%d] %5s -- %s: %s' << "\n"
-    message % [ severity[ 0..0 ], timestamp, $$, severity, progName || '-',
-      comment ]
+  def formatMessage( severity, timestamp, msg, progName )
+    line = '%s, [%s #%d] %5s -- %s: %s' << "\n"
+    line % [ severity[ 0..0 ], timestamp, $$, severity, progName || '-', msg ]
   end
 end
 
