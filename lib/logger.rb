@@ -1,6 +1,6 @@
 # Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.6 2003/09/23 14:08:58 nahi Exp $
+# $Id: logger.rb,v 1.7 2003/10/04 09:09:37 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -71,7 +71,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.6 2003/09/23 14:08:58 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.7 2003/10/04 09:09:37 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -322,7 +322,7 @@ private
     #
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
-      if log.is_a?(IO)
+      if log.respond_to?(:write) and log.respond_to?(:close)
 	@dev = log
       elsif log.is_a?(String)
 	@dev = open_logfile(log)
