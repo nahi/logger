@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$:.push( File.join( '..', 'lib' ))
+$:.unshift( File.join( '..', 'lib' ))
 require 'devel/logger'
 
 log = Devel::Logger.new( STDERR )

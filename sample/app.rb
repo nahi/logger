@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-$:.push( File.join( '..', 'lib' ))
+$:.unshift( File.join( '..', 'lib' ))
 require 'devel/logger'
 
-class MyApp < Application
+class MyApp < Devel::Application
   def initialize( a, b, c )
     super( 'MyApp' )
 
