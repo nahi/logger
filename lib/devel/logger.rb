@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 
-# $Id: logger.rb,v 1.1 2002/01/21 01:50:36 nakahiro Exp $
+# $Id: logger.rb,v 1.2 2002/01/21 02:12:10 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  %q$Id: logger.rb,v 1.1 2002/01/21 01:50:36 nakahiro Exp $ =~
+  %q$Id: logger.rb,v 1.2 2002/01/21 02:12:10 nakahiro Exp $ =~
     %/: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
@@ -158,13 +158,6 @@ public
 
   # SYNOPSIS
   #   Logger#add( severity, comment = nil, progName = nil ) { ... } = nil
-  #   Logger#debug( progName = nil ) { ... } = nil
-  #   Logger#info( progName = nil ) { ... } = nil
-  #   Logger#warn( progName = nil ) { ... } = nil
-  #   Logger#error( progName = nil ) { ... } = nil
-  #   Logger#caution( progName = nil ) { ... } = nil
-  #   Logger#fatail( progName = nil ) { ... } = nil
-  #   Logger#unknown( progName = nil ) { ... } = nil
   #
   # ARGS
   #   severity	Severity.  Constants are defined in Devel::Logger namespace.
