@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 $:.unshift(File.join('..', 'lib'))
-require 'devel/logger'
+require 'logger'
 
 logfile = File.join('logs', 'logShifting.log')
 # Max 3 age ... logShifting.log, logShifting.log.0, and logShifting.log.1
@@ -9,7 +9,7 @@ shift_age = 3
 # Shift log file about for each 1024 bytes.
 shift_size = 1024
 
-log = Devel::Logger.new(logfile, shift_age, shift_size)
+log = Logger.new(logfile, shift_age, shift_size)
 
 def do_log(log)
   log.debug('do_log1') { 'd' * rand(100) }

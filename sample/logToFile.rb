@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 $:.unshift(File.join('..', 'lib'))
-require 'devel/logger'
+require 'logger'
 
 logfile = File.join('logs', 'logToFile.log')
-log = Devel::Logger.new(logfile)
+log = Logger.new(logfile)
 
 def do_log(log)
   log.debug('do_log1') { "debug" }
@@ -16,12 +16,12 @@ def do_log(log)
   log.unknown('do_log7') { "unknown" }
 end
 
-log.sev_threshold = Devel::Logger::SEV_DEBUG	# Default.
+log.level = Logger::DEBUG	# Default.
 do_log(log)
 
 puts "Set severity threshold 'WARN'."
 
-log.sev_threshold = Devel::Logger::SEV_WARN
+log.level = Logger::WARN
 do_log(log)
 
 puts 'See logfile in "logs" directory.'

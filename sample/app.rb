@@ -1,16 +1,16 @@
 #!/usr/bin/env ruby
 
 $:.unshift(File.join('..', 'lib'))
-require 'devel/logger'
+require 'logger'
 
-class MyApp < Devel::Application
+class MyApp < Logger::Application
   def initialize(a, b, c)
     super('MyApp')
 
     # Set logDevice here.
     logfile = File.join('logs', 'app.log')
     self.log = logfile
-    self.sev_threshold = SEV_INFO
+    self.level = INFO
 
     # Initialize your application...
     @a = a
