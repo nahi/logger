@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'logger'
+require 'tempfile'
 
 
 class TestLoggerSeverity < Test::Unit::TestCase
@@ -35,19 +36,13 @@ class TestLogger < Test::Unit::TestCase
   end
 
   def log(logger, msg_id, *arg, &block)
-    r, w = IO.pipe
-    logger.instance_eval { @logdev = Logger::LogDevice.new(w) }
+    logdev = Tempfile.new(File.basename(__FILE__) + '.log')
+    logger.instance_eval { @logdev = Logger::LogDevice.new(logdev) }
     logger.__send__(msg_id, *arg, &block)
-    read_ready, = IO.select([r], nil, nil, 0.1)
-    w.close
-    if read_ready
-      line = r.read
-      r.close
-      Log.new(line)
-    else
-      r.close
-      nil
-    end
+    logdev.open
+    msg = logdev.read
+    logdev.close
+    Log.new(msg)
   end
 
   def test_level
@@ -119,7 +114,7 @@ class TestLogger < Test::Unit::TestCase
     assert_equal("my_progname", log.progname)
     logger.level = WARN
     assert(logger.log(INFO))
-    assert_nil(log_add(logger, INFO, "msg"))
+    assert_nil(log_add(logger, INFO, "msg").msg)
     log = log_add(logger, WARN, nil) { "msg" }
     assert_equal("msg\n", log.msg)
     log = log_add(logger, WARN, "") { "msg" }
@@ -252,6 +247,7 @@ class TestLogDevice < Test::Unit::TestCase
       assert(logdev.dev.sync)
       assert_equal(filename, logdev.filename)
     ensure
+      logdev.close
       File.unlink(filename)
     end
   end
