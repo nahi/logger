@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 
-# $Id: logger.rb,v 1.4 2002/01/22 09:01:51 nakahiro Exp $
+# $Id: logger.rb,v 1.5 2002/01/25 14:50:30 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.4 2002/01/22 09:01:51 nakahiro Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.5 2002/01/25 14:50:30 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -527,6 +527,7 @@ class Application
   def initialize( appName = '' )
     @appName = appName
     @log = Devel::Logger.new( STDERR )
+    @sevThreshold = SEV_DEBUG
   end
 
   # SYNOPSIS
@@ -562,6 +563,21 @@ class Application
   #
   def setLog( logDev, shiftAge = 0, shiftSize = 102400 )
     @log = Devel::Logger.new( logDev, shiftAge, shiftSize )
+    @log.sevThreshold = @sevThreshold
+  end
+
+  # SYNOPSIS
+  #   Application#setSevThreshold( severity )
+  #
+  # ARGS
+  #   sevThreshold	Severity threshold.
+  #
+  # DESCRIPTION
+  #   Set severity threshold.
+  #
+  def setSevThreshold( sevThreshold )
+    @sevThreshold = sevThreshold
+    @log.sevThreshold = @sevThreshold
   end
 
 protected

@@ -10,7 +10,7 @@ class MyApp < Application
     # Set logDevice here.
     logFile = File.join( 'logs', 'app.log' )
     setLog( logFile )
-    @log.sevThreshold = SEV_INFO
+    setSevThreshold( SEV_INFO )
 
     # Initialize your application...
     @a = a
