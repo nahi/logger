@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
-
-# $Id: logger.rb,v 1.5 2002/01/25 14:50:30 nakahiro Exp $
+#
+# $Id: logger.rb,v 1.6 2002/01/31 09:26:08 nakahiro Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,13 +75,20 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.5 2002/01/25 14:50:30 nakahiro Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.6 2002/01/31 09:26:08 nakahiro Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
   class ShiftingError < Error; end
 
   # Logging severity.
+  #   SEV_DEBUG
+  #   SEV_INFO
+  #   SEV_WARN
+  #   SEV_ERROR
+  #   SEV_CAUTION
+  #   SEV_FATAL
+  #   SEV_UNKNOWN
   module Severity
     SEV_DEBUG = 0
     SEV_INFO = 1
@@ -144,11 +151,7 @@ public
   #   Create an instance.
   #
   def initialize( logDev, shiftAge = 0, shiftSize = 1048576 )
-    @progName = if logDev.is_a?( String )
-	@progName = logDev
-      else
-	nil
-      end
+    @progName = nil
     @logDev = LogDevice.new( logDev,
       :shiftAge => shiftAge, :shiftSize => shiftSize )
     @sevThreshold = SEV_DEBUG
@@ -195,6 +198,10 @@ public
 	comment = progName || "(empty message)"
 	progName = @progName
       end
+    end
+
+    if !comment.is_a?( ::String )
+      comment = comment.inspect
     end
 
     severityLabel = formatSeverity( severity )
