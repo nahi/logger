@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.9 2002/02/14 16:19:46 nahi Exp $
+# $Id: logger.rb,v 1.10 2002/04/03 03:27:50 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.9 2002/02/14 16:19:46 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.10 2002/04/03 03:27:50 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -307,7 +307,7 @@ private
   end
 
   def formatDatetime( dateTime )
-    dateTime.to_s << ' ' << "%6d" % dateTime.usec
+    dateTime.strftime( "%Y-%m-%dT%H:%M:%S." ) << "%6d" % dateTime.usec
   end
 
   def formatComment( msg )
