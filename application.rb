@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.4 1999/12/20 07:43:04 nakahiro Exp $
+# $Id: application.rb,v 1.5 2000/01/11 12:31:10 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -210,7 +210,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.4 1999/12/20 07:43:04 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.5 2000/01/11 12:31:10 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -229,7 +229,9 @@ class Log # throw Log::Error
     # Remove white characters at the end of line.
     newComment.sub!( '/[ \t\r\f\n]*$/', '' )
     # Japanese Kanji char code conversion.
-    newComment = Kconv::kconv( newComment, @kCode, Kconv::AUTO )
+    if ( Kconv::guess( newComment ) != @kCode )
+      newComment = Kconv::kconv( newComment, @kCode, Kconv::AUTO )
+    end
     newComment
   end
 
