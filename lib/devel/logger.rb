@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.13 2003/04/27 01:11:00 nahi Exp $
+# $Id: logger.rb,v 1.14 2003/06/01 10:08:24 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.13 2003/04/27 01:11:00 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.14 2003/06/01 10:08:24 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -400,7 +400,7 @@ class LogDevice
       end
     end
 
-    @dev.syswrite(message) 
+    @dev.write(message) 
   end
 
   # SYNOPSIS
@@ -430,7 +430,7 @@ private
   end
 
   def addLogHeader(file)
-    file.syswrite(
+    file.write(
       "# Logfile created on %s by %s\n" % [Time.now.to_s, Logger::ProgName]
    )
   end
