@@ -22,3 +22,8 @@ puts "Set severity threshold 'WARN'."
 
 log.sevThreshold = Devel::Logger::SEV_WARN
 doLog( log )
+
+puts "Change datetime format.  Thanks to Daniel Berger."
+
+log.datetimeFormat = "%d-%b-%Y@%H:%M:%S"
+doLog( log )
