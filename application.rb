@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.12 2001/10/04 05:53:46 nakahiro Exp $
+# $Id: application.rb,v 1.13 2001/10/04 06:52:35 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -87,7 +87,7 @@ class Log # throw Log::Error
   attr( :sevThreshold, TRUE )
 
   # SYNOPSIS
-  #   Log.add( severity, comment = nil, program = '_unknown_' ) { ... }
+  #   Log#add( severity, comment = nil, program = '_unknown_' ) { ... }
   #
   # ARGS
   #   severity	Severity. See above to give this.
@@ -133,7 +133,7 @@ class Log # throw Log::Error
   end
 
   # SYNOPSIS
-  #   Log.close()
+  #   Log#close()
   #
   # DESCRIPTION
   #   Close the logging device.
@@ -273,7 +273,7 @@ class Log # throw Log::Error
     file.syswrite( "# Logfile created on %s by %s\n" % [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.12 2001/10/04 05:53:46 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.13 2001/10/04 06:52:35 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
@@ -330,7 +330,7 @@ class Application
   end
 
   # SYNOPSIS
-  #   Application.start()
+  #   Application#start()
   #
   # DESCRIPTION
   #   Start the application.
@@ -352,7 +352,7 @@ class Application
   end
 
   # SYNOPSIS
-  #   Application.setLog( log, shiftAge, shiftSize )
+  #   Application#setLog( log, shiftAge, shiftSize )
   #
   # ARGS
   #   ( see class Log )
@@ -371,7 +371,7 @@ class Application
   end
 
   # SYNOPSIS
-  #   log( severity, comment = nil ) { ... }
+  #   Application#log( severity, comment = nil ) { ... }
   #
   # ARGS
   #   severity	Severity. See above to give this.
