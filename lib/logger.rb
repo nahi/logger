@@ -1,6 +1,6 @@
 # Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.3 2003/09/18 06:12:30 nahi Exp $
+# $Id: logger.rb,v 1.4 2003/09/18 15:28:46 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -23,11 +23,11 @@
 #     file = open('foo.log', File::WRONLY | File::APPEND)
 #     # To create new (and to remove old) logfile, add File::CREAT like;
 #     #   file = open('foo.log', File::WRONLY | File::APPEND | File::CREAT)
-#     logger = Device::Logger.new(file)
+#     logger = Logger.new(file)
 #
 #   4. Create logger which ages logfile automatically.  Leave 10 ages and each
 #      file is about 102400 bytes.
-#     logger = Device::Logger.new('foo.log', 10, 102400)
+#     logger = Logger.new('foo.log', 10, 102400)
 #
 #   5. Create logger which ages logfile daily/weekly/monthly automatically.
 #     logger = Logger.new('foo.log', 'daily')
@@ -71,7 +71,7 @@
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.3 2003/09/18 06:12:30 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.4 2003/09/18 15:28:46 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
