@@ -1,5 +1,5 @@
 devel-logger -- Log dumping utility.
-  version 1.1.0
+  version 1.2.0
 
 What is this?
   Logging utility.
@@ -16,7 +16,7 @@ For more details.
 
 AUTHOR
   NAKAMURA, Hiroshi a.k.a. NaHi
-  nahi@keynauts.com
+  nakahiro@sarion.co.jp
 
 LEGAL NOTICE
   Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi
