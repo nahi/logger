@@ -12,12 +12,12 @@ shiftSize = 1024
 log = Devel::Logger.new( logFile, shiftAge, shiftSize )
 
 def doLog( log )
-  log.debug( 'doLog1' )   { 'd' * rand( 100 ) }
-  log.info( 'doLog2' )    { 'i' * rand( 100 ) }
-  log.warn( 'doLog3' )    { 'w' * rand( 100 ) }
-  log.error( 'doLog4' )   { 'e' * rand( 100 ) }
+  log.debug( 'doLog1' ) { 'd' * rand( 100 ) }
+  log.info( 'doLog2' ) { 'i' * rand( 100 ) }
+  log.warn( 'doLog3' ) { 'w' * rand( 100 ) }
+  log.error( 'doLog4' ) { 'e' * rand( 100 ) }
   log.caution( 'doLog5' ) { 'c' * rand( 100 ) }
-  log.fatal( 'doLog6' )   { 'f' * rand( 100 ) }
+  log.fatal( 'doLog6' ) { 'f' * rand( 100 ) }
   log.unknown( 'doLog7' ) { 'u' * rand( 100 ) }
 end
 
