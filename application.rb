@@ -1,8 +1,10 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.2 1999/07/03 10:26:44 nakahiro Exp $
+# $Id: application.rb,v 1.3 1999/08/03 12:17:29 nakahiro Exp $
 
+# This module is copyrighted free software by NAKAMURA, Hiroshi.
+# You can redistribute it and/or modify it under the same term as Ruby.
 
 # SYNOPSIS
 #   Log.new( log, shiftAge, shiftSize )
@@ -18,7 +20,7 @@
 #   Log dumping utility class.
 #
 #   Log format:
-#     SeverityID, [ Date Time MicroSec #pid] SeverityLabel -- ProgName: message
+#     SeverityID, [ Date Time mSec #pid] SeverityLabel -- ProgName: message
 #
 #   Log sample:
 #     I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: Only info.
@@ -57,6 +59,7 @@ class Log # throw Log::Error
     SEV_ERROR = 3
     SEV_CAUTION = 4
     SEV_FATAL = 5
+    SEV_UNKNOWN = 6
   end
   include Log::Severity
 
@@ -90,6 +93,7 @@ class Log # throw Log::Error
   #
   public
   def add( severity, comment, program = '_unknown_' )
+    severity = SEV_UNKNOWN unless severity
     return true if ( severity < @sevThreshold )
     if ( @logDev.shiftLog? ) then
       begin
@@ -99,10 +103,10 @@ class Log # throw Log::Error
       end
       @logDev.dev = createLogFile( @logDev.fileName )
     end
-    severityLabel = Log.formatSeverity( severity )
-    timestamp = Log.formatDatetime( Time.now )
-    comment = Log.formatComment( comment )
-    message = Log.formatMessage( severityLabel, timestamp, comment, program )
+    severityLabel = formatSeverity( severity )
+    timestamp = formatDatetime( Time.now )
+    comment = formatComment( comment )
+    message = formatMessage( severityLabel, timestamp, comment, program )
     @logDev.write( message )
     true
   end
@@ -206,21 +210,21 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.2 1999/07/03 10:26:44 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.3 1999/08/03 12:17:29 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
   SEV_LABEL = %w( DEBUG INFO WARN ERROR CAUTN FATAL ANY );
 
-  def Log.formatSeverity( severity )
+  def formatSeverity( severity )
     SEV_LABEL[ severity ] || 'UNKNOWN'
   end
 
-  def Log.formatDatetime( dateTime )
+  def formatDatetime( dateTime )
     dateTime.to_s << ' ' << "%6d" % dateTime.usec
   end
 
-  def Log.formatComment( comment )
+  def formatComment( comment )
     newComment = comment.dup
     # Remove white characters at the end of line.
     newComment.sub!( '/[ \t\r\f\n]*$/', '' )
@@ -229,7 +233,7 @@ class Log # throw Log::Error
     newComment
   end
 
-  def Log.formatMessage( severity, timestamp, comment, program )
+  def formatMessage( severity, timestamp, comment, program )
     message = '%s, [%s #%d] %5s -- %s: %s' << "\n"
     message % [ severity[ 0 .. 0 ], timestamp, $$, severity, program, comment ]
   end
@@ -314,23 +318,3 @@ class Application
     raise RuntimeError.new( 'Method run must be defined in the derived class.' )
   end
 end
-
-=begin
-    Log -- Log dumping utility class.
-    Application -- Easy logging application class.
-    Copyright (C) 1999  NAKAMURA, Hiroshi
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-=end
