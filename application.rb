@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.6 2000/03/29 13:26:01 nakahiro Exp $
+# $Id: application.rb,v 1.7 2000/03/29 15:25:31 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -200,7 +200,7 @@ class Log # throw Log::Error
   end
 
   def createLogFile( fileName )
-    logDev = open( fileName, ( File::WRONLY | File::APPEND ))
+    logDev = open( fileName, ( File::WRONLY | File::APPEND | File::CREAT ))
     addLogHeader( logDev )
     logDev
   end
@@ -210,7 +210,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.6 2000/03/29 13:26:01 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.7 2000/03/29 15:25:31 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
