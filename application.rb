@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.8 2000/04/03 10:33:50 nakahiro Exp $
+# $Id: application.rb,v 1.9 2000/04/03 11:35:04 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -171,20 +171,19 @@ class Log # throw Log::Error
 	# Note: always returns false if '0'.
         return ( @fileName && ( @shiftAge > 0 ) &&
 	  ( @dev.stat.size > @shiftSize ))
-      elsif ( @dev.stat.mtime.mday != Time.now.mday )
-	case @shiftAge
-	when /^daily$/
-	  return true
-	when /^weekly$/
-	  return ( Time.now.wday == 1 )
-	when /^monthly$/
-	  return ( Time.now.mday == 1 )
-	else
-	  return false
-	end
-	return true
       else
-	false
+	now = Time.now
+	limitTime = case @shiftAge
+	  when /^daily$/
+	    eod( now -1 * SiD )
+	  when /^weekly$/
+	    eod( now - now.wday * SiD )
+	  when /^monthly$/
+	    eod( now - now.mday * SiD )
+	  else
+	    now
+	  end
+	return ( @dev.stat.mtime <= limitTime )
       end
     end
 
@@ -203,7 +202,18 @@ class Log # throw Log::Error
         File.rename( "#{@fileName}", "#{@fileName}.0" )
 	return true
       else
-	postfix = ( Time.now - SiD ).strftime( "%Y%m%d" ) # YYYYMMDD
+	now = Time.now
+	postfixTime = case @shiftAge
+	  when /^daily$/
+	    eod( now - 1 * SiD )
+	  when /^weekly$/
+	    eod( now - now.wday * SiD )
+	  when /^monthly$/
+	    eod( now - now.mday * SiD )
+	  else
+	    now
+	  end
+	postfix = postfixTime.strftime( "%Y%m%d" )	# YYYYMMDD
         File.rename( "#{@fileName}", "#{@fileName}.#{postfix}" )
 	return true
       end
@@ -212,6 +222,10 @@ class Log # throw Log::Error
     private
 
     SiD = 24 * 60 * 60
+
+    def eod( t )
+      Time.mktime( t.year, t.month, t.mday, 23, 59, 59 )
+    end
   end
 
   def initialize( log, shiftAge = 3, shiftSize = 102400 )
@@ -247,7 +261,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.8 2000/04/03 10:33:50 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.9 2000/04/03 11:35:04 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
