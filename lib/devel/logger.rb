@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.10 2002/04/03 03:27:50 nahi Exp $
+# $Id: logger.rb,v 1.11 2003/01/11 01:35:29 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.10 2002/04/03 03:27:50 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.11 2003/01/11 01:35:29 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -204,7 +204,7 @@ public
     end
 
     if msg.is_a?( ::Exception )
-      msg = "#{ msg.message } (#{ msg.type })\n" <<
+      msg = "#{ msg.message } (#{ msg.class })\n" <<
 	( msg.backtrace || [] ).join( "\n" )
     elsif !msg.is_a?( ::String )
       msg = msg.inspect
@@ -556,7 +556,7 @@ class Application
       log( SEV_INFO, "Start of #{ @appName }." )
       status = run
     rescue
-      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.type})\n" << $@.join( "\n" ))
+      log( SEV_FATAL, "Detected an exception. Stopping ... #{$!} (#{$!.class})\n" << $@.join( "\n" ))
     ensure
       log( SEV_INFO, "End of #{ @appName }. (status: #{ status.to_s })" )
     end
