@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.3 1999/08/03 12:17:29 nakahiro Exp $
+# $Id: application.rb,v 1.4 1999/12/20 07:43:04 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -149,7 +149,7 @@ class Log # throw Log::Error
 
     public
     def shiftLog?
-      ( @fileName && ( @shiftAge > 0 ) && ( @dev.stat[7] > @shiftSize ))
+      ( @fileName && ( @shiftAge > 0 ) && ( @dev.stat.size > @shiftSize ))
     end
 
     public
@@ -210,7 +210,7 @@ class Log # throw Log::Error
       [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.3 1999/08/03 12:17:29 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.4 1999/12/20 07:43:04 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
