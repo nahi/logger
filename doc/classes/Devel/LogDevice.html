@@ -1,0 +1,230 @@
+
+<html><head>
+  <title>Class: Devel::LogDevice</title>
+  <link rel=StyleSheet href="../.././rdoc-style.css" type="text/css" media=screen>
+  <script language="JavaScript">
+  <!--
+  function popCode(url) {
+    window.open(url, "Code", 
+          "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+  //-->
+  </script>
+</head>
+<body bgcolor="white">
+
+
+<table width="100%" border=0 cellspacing=0>
+ <tr class="title-row">
+ <td class="big-title-font">
+   <sup><font color="aqua">Class</font></sup> Devel::LogDevice
+ </td>
+ <td align="right">
+   <table cellspacing=0 cellpadding=2>
+     <tr valign="top">
+      <td class="small-title-font">In:</td>
+      <td class="small-title-font">
+
+        <a href="../../files/devel/logger_rb.html" class="aqua">
+
+/home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb
+
+         </a>
+
+
+      </td>
+     </tr>
+
+     <tr>
+      <td class="small-title-font">Parent:</td>
+      <td class="small-title-font">
+
+Object
+
+      </td>
+     </tr>
+
+   </table>
+  </td>
+  </tr>
+</table>
+  <!-- banner header -->
+
+
+<div class="description"><td><a href="LogDevice.html">Devel::LogDevice</a> -- Logging device.
+
+</div>
+
+
+
+</div>
+
+
+<table cellpadding=5 width="100%">
+<tr><td class="tablesubtitle">Methods</td></tr>
+</table>
+<div class="name-list">
+<a href="#M000003">close</a>&nbsp; &nbsp;
+<a href="#M000001">new</a>&nbsp; &nbsp;
+<a href="#M000002">write</a>&nbsp; &nbsp;
+
+</div>
+
+
+
+<table cellpadding=5 width="100%">
+<tr><td class="tablesubtitle">Attributes</td></tr>
+</table>
+<table cellspacing=5>
+     <tr valign="top">
+       <td class="attr-name">dev</td>
+       <td align="center" class="attr-rw">&nbsp;[R]&nbsp;</td>
+       <td></td>
+     </tr>
+     <tr valign="top">
+       <td class="attr-name">fileName</td>
+       <td align="center" class="attr-rw">&nbsp;[R]&nbsp;</td>
+       <td></td>
+     </tr>
+
+</table>
+
+
+
+
+  
+
+
+
+
+<table cellpadding=5 width="100%">
+<tr><td class="tablesubtitle">Public Class methods</td></tr>
+</table>
+<table width="100%" cellspacing = 0 cellpadding=5 border=0>
+<tr><td class="methodtitle">
+<a name="M000001">
+
+<a href="LogDevice.src/M000001.html" target="Code" class="methodtitle"
+ onClick="popCode('LogDevice.src/M000001.html');return 0;">
+
+<b>new</b>( log = nil, opt = {} )
+
+</a>
+
+</a></td></tr>
+</table>
+<div class="description">
+SYNOPSIS
+
+<pre>
+  Logger::LogDev.new( name, opt = {} )
+</pre>
+<p>
+ARGS
+
+<pre>
+  log String as filename of logging.
+                or
+              IO as logging device(i.e. STDERR).
+      opt   Hash of options.
+</pre>
+<p>
+DESCRIPTION
+
+<pre>
+  Log device class. Output and shifting of log.
+</pre>
+<p>
+OPTIONS
+
+<pre>
+  :shiftAge
+    An Integer        Num of files you want to keep aged logs.
+        'daily'     Daily shifting.
+        'weekly'    Weekly shifting (Shift every monday.)
+        'monthly'   Monthly shifting (Shift every 1th day.)
+
+  :shiftSize  Shift size threshold when :shiftAge is an integer.
+                      Otherwise (like 'daily'), it is ignored.
+</pre>
+<p>
+
+</div>
+
+
+
+<table cellpadding=5 width="100%">
+<tr><td class="tablesubtitle">Public Instance methods</td></tr>
+</table>
+<table width="100%" cellspacing = 0 cellpadding=5 border=0>
+<tr><td class="methodtitle">
+<a name="M000002">
+
+<a href="LogDevice.src/M000002.html" target="Code" class="methodtitle"
+ onClick="popCode('LogDevice.src/M000002.html');return 0;">
+
+<b>write</b>( message )
+
+</a>
+
+</a></td></tr>
+</table>
+<div class="description">
+SYNOPSIS
+
+<pre>
+  Logger::LogDev#write( message )
+</pre>
+<p>
+ARGS
+
+<pre>
+  message             Message to be logged.
+</pre>
+<p>
+DESCRIPTION
+
+<pre>
+  Log a message.  If needed, the log device is aged and the new device
+      is prepared.  Log device is not locked.  Append open does not need to
+      lock file but on the OS which supports multi I/O, records possibly be
+      mixed.
+</pre>
+<p>
+
+</div>
+<table width="100%" cellspacing = 0 cellpadding=5 border=0>
+<tr><td class="methodtitle">
+<a name="M000003">
+
+<a href="LogDevice.src/M000003.html" target="Code" class="methodtitle"
+ onClick="popCode('LogDevice.src/M000003.html');return 0;">
+
+<b>close</b>()
+
+</a>
+
+</a></td></tr>
+</table>
+<div class="description">
+SYNOPSIS
+
+<pre>
+  Logger::LogDev#close
+</pre>
+<p>
+DESCRIPTION
+
+<pre>
+  Close the logging device.
+</pre>
+<p>
+
+</div>
+
+
+
+
+  <!-- method descriptions -->
+
+</body>

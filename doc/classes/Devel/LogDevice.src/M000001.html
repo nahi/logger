@@ -1,0 +1,29 @@
+
+<html>
+<head><title>%title%</title>
+<style>
+  .kw { color: #3333FF; font-weight: bold }
+  .cmt { color: green; font-style: italic }
+  .str { color: #662222; font-style: italic }
+  .re  { color: #662222; }
+</style>
+</head>
+<body bgcolor="white">
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 348</span>
+  <span class="kw">def</span> initialize( log = <span class="kw">nil</span>, opt = {} )
+    @dev = @fileName = @shiftAge = @shiftSize = <span class="kw">nil</span>
+    <span class="kw">if</span> ( log.is_a?( IO ))
+      <span class="cmt"># IO was given. Use it as a log device.</span>
+      @dev = log
+    <span class="kw">elsif</span> ( log.is_a?( String ))
+      <span class="cmt"># String was given. Open the file as a log device.</span>
+      @dev = openLogFile( log )
+      @fileName = log
+      @shiftAge = opt[ :shiftAge ] || 7
+      @shiftSize = opt[ :shiftSize ] || 1048576
+    <span class="kw">else</span>
+      raise ArgumentError.new( "Wrong argument: #{ log } for log." )
+    <span class="kw">end</span>
+  <span class="kw">end</span></pre>
+</body>
+</html>

@@ -1,0 +1,25 @@
+
+<html>
+<head><title>%title%</title>
+<style>
+  .kw { color: #3333FF; font-weight: bold }
+  .cmt { color: green; font-style: italic }
+  .str { color: #662222; font-style: italic }
+  .re  { color: #662222; }
+</style>
+</head>
+<body bgcolor="white">
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 376</span>
+  <span class="kw">def</span> write( message )
+    <span class="kw">if</span> shiftLog?
+      <span class="kw">begin</span>
+	shiftLog
+      <span class="kw">rescue</span>
+	raise Logger::ShiftingError.new( "Shifting failed. #{$!}" )
+      <span class="kw">end</span>
+    <span class="kw">end</span>
+
+    @dev.syswrite( message ) 
+  <span class="kw">end</span></pre>
+</body>
+</html>

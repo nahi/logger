@@ -1,0 +1,37 @@
+
+<html>
+<head><title>%title%</title>
+<style>
+  .kw { color: #3333FF; font-weight: bold }
+  .cmt { color: green; font-style: italic }
+  .str { color: #662222; font-style: italic }
+  .re  { color: #662222; }
+</style>
+</head>
+<body bgcolor="white">
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 185</span>
+  <span class="kw">def</span> add( severity, comment = <span class="kw">nil</span>, progName = <span class="kw">nil</span>, &block )
+    severity ||= SEV_UNKNOWN
+    <span class="kw">if</span> @logDev.nil? <span class="kw">or</span> severity < @sevThreshold
+      <span class="kw">return</span> <span class="kw">true</span>
+    <span class="kw">end</span>
+    progName ||= @progName
+
+    <span class="kw">if</span> comment.nil?
+      <span class="kw">if</span> block_given?
+	comment = <span class="kw">yield</span>
+      <span class="kw">else</span>
+	comment = progName || <span class="str">"(empty message)"</span>
+	progName = @progName
+      <span class="kw">end</span>
+    <span class="kw">end</span>
+
+    severityLabel = formatSeverity( severity )
+    timestamp = formatDatetime( Time.now )
+    comment = formatComment( comment )
+    message = formatMessage( severityLabel, timestamp, comment, progName )
+    @logDev.write( message )
+    <span class="kw">true</span>
+  <span class="kw">end</span></pre>
+</body>
+</html>

@@ -1,0 +1,25 @@
+
+<html>
+<head><title>%title%</title>
+<style>
+  .kw { color: #3333FF; font-weight: bold }
+  .cmt { color: green; font-style: italic }
+  .str { color: #662222; font-style: italic }
+  .re  { color: #662222; }
+</style>
+</head>
+<body bgcolor="white">
+<pre><span class="cmt"># File /home/achilles/nakahiro/cvs_work/Ruby/Application/lib/devel/logger.rb, line 147</span>
+  <span class="kw">def</span> initialize( logDev, shiftAge = 0, shiftSize = 1048576 )
+    @progName = <span class="kw">if</span> logDev.is_a?( String )
+	@progName = logDev
+      <span class="kw">else</span>
+	<span class="kw">nil</span>
+      <span class="kw">end</span>
+    @logDev = LogDevice.new( logDev,
+      :shiftAge => shiftAge, :shiftSize => shiftSize )
+    @sevThreshold = SEV_DEBUG
+    @kCode = <span class="kw">nil</span>
+  <span class="kw">end</span></pre>
+</body>
+</html>
