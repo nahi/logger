@@ -1,7 +1,7 @@
 # Log -- Log dumping utility class.
 # Application -- Easy logging application class.
 
-# $Id: application.rb,v 1.13 2001/10/04 06:52:35 nakahiro Exp $
+# $Id: application.rb,v 1.14 2001/12/07 12:39:09 nakahiro Exp $
 
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -87,7 +87,7 @@ class Log # throw Log::Error
   attr( :sevThreshold, TRUE )
 
   # SYNOPSIS
-  #   Log#add( severity, comment = nil, program = '_unknown_' ) { ... }
+  #   Log#add( severity, comment = nil, program = UnknownProgram ) { ... }
   #
   # ARGS
   #   severity	Severity. See above to give this.
@@ -110,10 +110,10 @@ class Log # throw Log::Error
   #   Log no message, and returns true.
   #
   public
-  def add( severity, comment = nil, program = '_unknown_' )
+  def add( severity, comment = nil, program = UndefinedProgram )
     severity = SEV_UNKNOWN unless severity
     return true if ( severity < @sevThreshold )
-    if block_given? and comment.nil?
+    if comment.nil? and block_given?
       comment = yield
     end
     if ( @logDev.shiftLog? )
@@ -132,6 +132,34 @@ class Log # throw Log::Error
     true
   end
 
+  def debug( program = UndefinedProgram )
+    add( SEV_DEBUG, yield, program )
+  end
+
+  def info( program = UndefinedProgram )
+    add( SEV_INFO, yield, program )
+  end
+
+  def warn( program = UndefinedProgram )
+    add( SEV_WARN, yield, program )
+  end
+
+  def error( program = UndefinedProgram )
+    add( SEV_ERROR, yield, program )
+  end
+
+  def caution( program = UndefinedProgram )
+    add( SEV_CAUTION, yield, program )
+  end
+
+  def fatal( program = UndefinedProgram )
+    add( SEV_FATAL, yield, program )
+  end
+
+  def unknown( program = UndefinedProgram )
+    add( SEV_UNKNOWN, yield, program )
+  end
+
   # SYNOPSIS
   #   Log#close()
   #
@@ -148,6 +176,8 @@ class Log # throw Log::Error
   end
 
   private
+
+  UndefinedProgram = '_unknown_'
 
   # Log::LogDev -- log device class. Output and shifting of log.
   class LogDev
@@ -273,7 +303,7 @@ class Log # throw Log::Error
     file.syswrite( "# Logfile created on %s by %s\n" % [ Time.now.to_s, ProgName ])
   end
 
-  %q$Id: application.rb,v 1.13 2001/10/04 06:52:35 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: application.rb,v 1.14 2001/12/07 12:39:09 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   ProgName = "#{$1}/#{$2}"
 
   # Severity label for logging. ( max 5 char )
