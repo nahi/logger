@@ -1,6 +1,6 @@
 # Devel::Logger -- Logging utility.
 #
-# $Id: logger.rb,v 1.12 2003/02/22 01:09:07 nahi Exp $
+# $Id: logger.rb,v 1.13 2003/04/27 01:11:00 nahi Exp $
 #
 # This module is copyrighted free software by NAKAMURA, Hiroshi.
 # You can redistribute it and/or modify it under the same term as Ruby.
@@ -75,7 +75,7 @@ module Devel
 #
 class Logger
 
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.12 2003/02/22 01:09:07 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.13 2003/04/27 01:11:00 nahi Exp $
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -105,6 +105,9 @@ class Logger
 
   # Logging program name.
   attr_accessor :progName
+
+  # Logging date-time format (string passed to strftime)
+  attr_accessor :datetimeFormat
 
   # Interface for Log4r compatibility.
   DEBUG = SEV_DEBUG
@@ -159,6 +162,7 @@ public
       :shiftAge => shiftAge, :shiftSize => shiftSize)
     @sevThreshold = SEV_DEBUG
     @kCode = nil
+    @datetimeFormat = nil
   end
 
   # SYNOPSIS
@@ -308,7 +312,11 @@ private
   end
 
   def formatDatetime(dateTime)
-    dateTime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d" % dateTime.usec
+    if @datetimeFormat.nil?
+      dateTime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d" % dateTime.usec
+    else
+      dateTime.strftime(@datetimeFormat)
+    end
   end
 
   def formatComment(msg)
