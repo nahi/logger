@@ -1,0 +1,28 @@
+Devel::Logger -- Log dumping utility.
+
+What is this?
+  Logging utility.
+
+Get started.
+  See "sample" directory.  Samples should run before installing this package.
+
+How to install.
+  Try;
+  $ ruby install.rb
+
+For more details.
+  See doc/index.html
+
+CREDITS
+  Documents in doc/ are created by RDoc - Documentation from Ruby Source Files.
+  For more details, see http://rdoc.sourceforge.net/
+  Thanks to PragDave, the author of RDoc.
+
+AUTHOR
+  NAKAMURA, Hiroshi a.k.a. NaHi
+  nahi@keynauts.com
+
+LEGAL NOTICE
+  Copyright (C) 2000, 2001, 2002 NAKAMURA, Hiroshi
+  This module is copyrighted free software by NAKAMURA, Hiroshi.
+  You can redistribute it and/or modify it under the same term as Ruby.
