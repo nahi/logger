@@ -1,4 +1,7 @@
-#
+# logger.rb - saimple logging utility
+# Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nakahiro@sarion.co.jp>.
+
+
 # = logger.rb
 #
 # Simple logging utility.
@@ -8,7 +11,7 @@
 # License::
 #   You can redistribute it and/or modify it under the same terms of Ruby's
 #   license; either the dual license version in 2003, or any later version.
-# Revision:: $Id: logger.rb,v 1.8 2004/01/08 16:14:54 nahi Exp $
+# Revision:: $Id$
 #
 # See Logger for documentation.
 #
@@ -19,7 +22,6 @@
 #
 # The Logger class provides a simple but sophisticated logging utility that
 # anyone can use because it's included in the Ruby 1.8.x standard library.
-# For more advanced logging, see the "Log4r" package on the RAA.
 #
 # The HOWTOs below give a code-based overview of Logger's usage, but the basic
 # concept is as follows.  You create a Logger object (output to a file or
@@ -75,10 +77,6 @@
 # auto-rolling of log files, setting the format of log messages, and
 # specifying a program name in conjunction with the message.  The next section
 # shows you how to achieve these things.
-#
-# See http://raa.ruby-lang.org/list.rhtml?name=log4r for Log4r, which contains
-# many advanced features like file-based configuration, a wide range of
-# logging targets, simultaneous logging, and heirachical logging.
 #
 #
 # == HOWTOs
@@ -146,7 +144,7 @@
 #
 # 1. Original interface.
 #
-#      logger.level = Logger::WARN
+#      logger.sev_threshold = Logger::WARN
 #
 # 2. Log4r (somewhat) compatible interface.
 #
@@ -167,15 +165,20 @@
 #   I, [Wed Mar 03 02:34:24 JST 1999 895701 #19074]  INFO -- Main: info.
 #
 # You may change the date and time format in this manner:
-# 
+#
 #   logger.datetime_format = "%Y-%m-%d %H:%M:%S"
 #         # e.g. "2004-01-03 00:54:26"
 #
 # There is currently no supported way to change the overall format, but you may
 # have some luck hacking the Format constant.
 #
+
+
+require 'monitor'
+
+
 class Logger
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb,v 1.8 2004/01/08 16:14:54 nahi Exp $
+  /: (\S+),v (\S+)/ =~ %q$Id$
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
@@ -247,7 +250,6 @@ class Logger
   # required.
   #
   def initialize(logdev, shift_age = 0, shift_size = 1048576)
-    @logdev = nil
     @progname = nil
     @level = DEBUG
     @datetime_format = nil
@@ -259,7 +261,7 @@ class Logger
 
   #
   # === Synopsis
-  # 
+  #
   #   Logger#add(severity, message = nil, progname = nil) { ... }
   #
   # === Args
@@ -355,18 +357,18 @@ class Logger
   #
   # === Examples
   #
-  #   logger.info("MainApp") { "Received connection from #{ip}" } 
+  #   logger.info("MainApp") { "Received connection from #{ip}" }
   #   # ...
   #   logger.info "Waiting for input from user"
   #   # ...
   #   logger.info { "User typed #{input}" }
   #
   # You'll probably stick to the second form above, unless you want to provide a
-  # program name (which you can do with <tt>Logger#progname=</tt> as well). 
+  # program name (which you can do with <tt>Logger#progname=</tt> as well).
   #
   # === Return
   #
-  # See #add. 
+  # See #add.
   #
   def info(progname = nil, &block)
     add(INFO, nil, progname, &block)
@@ -427,7 +429,7 @@ private
 
   def format_datetime(datetime)
     if @datetime_format.nil?
-      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%6d " % datetime.usec
+      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%06d " % datetime.usec
     else
       datetime.strftime(@datetime_format)
     end
@@ -460,8 +462,8 @@ private
     #
     # == Synopsis
     #
-    #   Logger::LogDev.new(name, :shift_age => 'daily|weekly|monthly')
-    #   Logger::LogDev.new(name, :shift_age => 10, :shift_size => 1024*1024)
+    #   Logger::LogDevice.new(name, :shift_age => 'daily|weekly|monthly')
+    #   Logger::LogDevice.new(name, :shift_age => 10, :shift_size => 1024*1024)
     #
     # == Args
     #
@@ -487,10 +489,12 @@ private
     # IO object).  The beginning of each file created by this class is tagged
     # with a header message.
     #
-    # This class is unlikely to be used directly; it is a backend for Logger. 
+    # This class is unlikely to be used directly; it is a backend for Logger.
     #
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
+      @mutex = Object.new
+      @mutex.extend(MonitorMixin)
       if log.respond_to?(:write) and log.respond_to?(:close)
 	@dev = log
       else
@@ -509,22 +513,25 @@ private
     # mixed.
     #
     def write(message)
-      if shift_log?
-       	begin
-  	  shift_log
-   	rescue
-  	  raise Logger::ShiftingError.new("Shifting failed. #{$!}")
-   	end
+      @mutex.synchronize do
+        if @shift_age and @dev.respond_to?(:stat)
+          begin
+            check_shift_log
+          rescue
+            raise Logger::ShiftingError.new("Shifting failed. #{$!}")
+          end
+        end
+        @dev.write(message)
       end
-
-      @dev.write(message) 
     end
 
     #
     # Close the logging device.
     #
     def close
-      @dev.close
+      @mutex.synchronize do
+        @dev.close
+      end
     end
 
   private
@@ -539,6 +546,7 @@ private
 
     def create_logfile(filename)
       logdev = open(filename, (File::WRONLY | File::APPEND | File::CREAT))
+      logdev.sync = true
       add_log_header(logdev)
       logdev
     end
@@ -551,64 +559,55 @@ private
 
     SiD = 24 * 60 * 60
 
-    def shift_log?
-      if !@shift_age or !@dev.respond_to?(:stat)
-     	return false
-      end
-      if (@shift_age.is_a?(Integer))
-	# Note: always returns false if '0'.
-	return (@filename && (@shift_age > 0) && (@dev.stat.size > @shift_size))
+    def check_shift_log
+      if @shift_age.is_a?(Integer)
+        # Note: always returns false if '0'.
+        if @filename && (@shift_age > 0) && (@dev.stat.size > @shift_size)
+          shift_log_age
+        end
       else
-	now = Time.now
-	limit_time = case @shift_age
-	  when /^daily$/
-	    eod(now - 1 * SiD)
-	  when /^weekly$/
-	    eod(now - ((now.wday + 1) * SiD))
-	  when /^monthly$/
-	    eod(now - now.mday * SiD)
-	  else
-	    now
-	  end
-	return (@dev.stat.mtime <= limit_time)
+        now = Time.now
+        if @dev.stat.mtime <= previous_period_end(now)
+          shift_log_period(now)
+        end
       end
     end
 
-    def shift_log
-      # At first, close the device if opened.
-      if @dev
-      	@dev.close
-       	@dev = nil
+    def shift_log_age
+      (@shift_age-3).downto(0) do |i|
+        if FileTest.exist?("#{@filename}.#{i}")
+          File.rename("#{@filename}.#{i}", "#{@filename}.#{i+1}")
+        end
       end
-      if (@shift_age.is_a?(Integer))
-	(@shift_age-3).downto(0) do |i|
-	  if (FileTest.exist?("#{@filename}.#{i}"))
-	    File.rename("#{@filename}.#{i}", "#{@filename}.#{i+1}")
-	  end
-	end
-	File.rename("#{@filename}", "#{@filename}.0")
-      else
-	now = Time.now
-	postfix_time = case @shift_age
-	  when /^daily$/
-	    eod(now - 1 * SiD)
-	  when /^weekly$/
-	    eod(now - ((now.wday + 1) * SiD))
-	  when /^monthly$/
-	    eod(now - now.mday * SiD)
-	  else
-	    now
-	  end
-	postfix = postfix_time.strftime("%Y%m%d")	# YYYYMMDD
-	age_file = "#{@filename}.#{postfix}"
-	if (FileTest.exist?(age_file))
-	  raise RuntimeError.new("'#{ age_file }' already exists.")
-	end
-	File.rename("#{@filename}", age_file)
-      end
-
+      @dev.close
+      File.rename("#{@filename}", "#{@filename}.0")
       @dev = create_logfile(@filename)
       return true
+    end
+
+    def shift_log_period(now)
+      postfix = previous_period_end(now).strftime("%Y%m%d")	# YYYYMMDD
+      age_file = "#{@filename}.#{postfix}"
+      if FileTest.exist?(age_file)
+        raise RuntimeError.new("'#{ age_file }' already exists.")
+      end
+      @dev.close
+      File.rename("#{@filename}", age_file)
+      @dev = create_logfile(@filename)
+      return true
+    end
+
+    def previous_period_end(now)
+      case @shift_age
+      when /^daily$/
+        eod(now - 1 * SiD)
+      when /^weekly$/
+        eod(now - ((now.wday + 1) * SiD))
+      when /^monthly$/
+        eod(now - now.mday * SiD)
+      else
+        now
+      end
     end
 
     def eod(t)
@@ -626,7 +625,7 @@ private
   #
   # 1. Define your application class as a sub-class of this class.
   # 2. Override 'run' method in your class to do many things.
-  # 3. Instanciate it and invoke 'start'.
+  # 3. Instantiate it and invoke 'start'.
   #
   # == Example
   #

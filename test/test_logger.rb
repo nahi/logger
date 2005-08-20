@@ -273,4 +273,72 @@ class TestLogDevice < Test::Unit::TestCase
     assert(w.closed?)
     r.close
   end
+
+  def test_shifting_size
+    logfile = File.basename(__FILE__) + '_1.log'
+    logfile0 = logfile + '.0'
+    logfile1 = logfile + '.1'
+    logfile2 = logfile + '.2'
+    logfile3 = logfile + '.3'
+    File.unlink(logfile) if File.exist?(logfile)
+    File.unlink(logfile0) if File.exist?(logfile0)
+    File.unlink(logfile1) if File.exist?(logfile1)
+    File.unlink(logfile2) if File.exist?(logfile2)
+    logger = Logger.new(logfile, 4, 100)
+    logger.error("0" * 15)
+    assert(File.exist?(logfile))
+    assert(!File.exist?(logfile0))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile0))
+    assert(!File.exist?(logfile1))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile1))
+    assert(!File.exist?(logfile2))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile2))
+    assert(!File.exist?(logfile3))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile3))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile3))
+    File.unlink(logfile)
+    File.unlink(logfile0)
+    File.unlink(logfile1)
+    File.unlink(logfile2)
+
+    logfile = File.basename(__FILE__) + '_2.log'
+    logfile0 = logfile + '.0'
+    logfile1 = logfile + '.1'
+    logfile2 = logfile + '.2'
+    logfile3 = logfile + '.3'
+    logger = Logger.new(logfile, 4, 150)
+    logger.error("0" * 15)
+    assert(File.exist?(logfile))
+    assert(!File.exist?(logfile0))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile0))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile0))
+    assert(!File.exist?(logfile1))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile1))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile1))
+    assert(!File.exist?(logfile2))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile2))
+    logger.error("0" * 15)
+    assert(File.exist?(logfile2))
+    assert(!File.exist?(logfile3))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile3))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile3))
+    logger.error("0" * 15)
+    assert(!File.exist?(logfile3))
+    File.unlink(logfile)
+    File.unlink(logfile0)
+    File.unlink(logfile1)
+    File.unlink(logfile2)
+  end
 end
