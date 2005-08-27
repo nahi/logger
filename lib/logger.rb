@@ -178,6 +178,7 @@ require 'monitor'
 
 
 class Logger
+  VERSION = "1.2.6"
   /: (\S+),v (\S+)/ =~ %q$Id$
   ProgName = "#{$1}/#{$2}"
 
@@ -203,6 +204,11 @@ class Logger
 
   # Logging date-time format (string passed to +strftime+).
   attr_accessor :datetime_format
+
+  # Logging formatter.  formatter#call is invoked with 4 arguments; severity,
+  # timestamp, progname and msg for each log.  It is expected to return a
+  # logdev#write-able Object.
+  attr_accessor :formatter
 
   alias sev_threshold level
   alias sev_threshold= level=
@@ -246,16 +252,18 @@ class Logger
   #
   # === Description
   #
-  # Create an instance.  See Logger::LogDevice.new for more information if
-  # required.
+  # Create an instance.
   #
   def initialize(logdev, shift_age = 0, shift_size = 1048576)
     @progname = nil
     @level = DEBUG
     @datetime_format = nil
+    @default_formatter = Formatter.new
+    @formatter = nil
     @logdev = nil
     if logdev
-      @logdev = LogDevice.new(logdev, :shift_age => shift_age, :shift_size => shift_size)
+      @logdev = LogDevice.new(logdev, :shift_age => shift_age,
+        :shift_size => shift_size)
     end
   end
 
@@ -321,8 +329,8 @@ class Logger
       format_message(
 	format_severity(severity),
 	format_datetime(Time.now),
-	msg2str(message),
-	progname
+        progname,
+	msg2str(message)
       )
     )
     true
@@ -435,9 +443,8 @@ private
     end
   end
 
-  Format = "%s, [%s#%d] %5s -- %s: %s\n"
-  def format_message(severity, timestamp, msg, progname)
-    Format % [severity[0..0], timestamp, $$, severity, progname, msg]
+  def format_message(severity, timestamp, progname, msg)
+    (@formatter || @default_formatter).call(severity, timestamp, progname, msg)
   end
 
   def msg2str(msg)
@@ -452,45 +459,19 @@ private
   end
 
 
-  #
-  # LogDevice -- Logging device.
-  #
+  class Formatter
+    Format = "%s, [%s#%d] %5s -- %s: %s\n"
+
+    def call(severity, timestamp, progname, msg)
+      Format % [severity[0..0], timestamp, $$, severity, progname, msg]
+    end
+  end
+
+
   class LogDevice
     attr_reader :dev
     attr_reader :filename
 
-    #
-    # == Synopsis
-    #
-    #   Logger::LogDevice.new(name, :shift_age => 'daily|weekly|monthly')
-    #   Logger::LogDevice.new(name, :shift_age => 10, :shift_size => 1024*1024)
-    #
-    # == Args
-    #
-    # +name+::
-    #   A String (representing a filename) or an IO object (actually, anything
-    #   that responds to +write+ and +close+).  If a filename is given, then
-    #   that file is opened for writing (and appending if it already exists),
-    #   with +sync+ set to +true+.
-    # +opts+::
-    #   Contains optional arguments for rolling ("shifting") the log file.
-    #   <tt>:shift_age</tt> is either a description (e.g. 'daily'), or an
-    #   integer number of log files to keep.  <tt>shift_size</tt> is the maximum
-    #   size of the log file, and is only significant is a number is given for
-    #   <tt>shift_age</tt>.
-    #
-    #   These arguments are only relevant if a filename is provided for the
-    #   first argument.
-    #
-    # == Description
-    #
-    # Creates a LogDevice object, which is the target for log messages.  Rolling
-    # of log files is supported (only if a filename is given; you can't roll an
-    # IO object).  The beginning of each file created by this class is tagged
-    # with a header message.
-    #
-    # This class is unlikely to be used directly; it is a backend for Logger.
-    #
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
       @mutex = Object.new
@@ -506,12 +487,6 @@ private
       end
     end
 
-    #
-    # Log a message.  If needed, the log file is rolled and the new file is
-    # prepared.  Log device is not locked.  Append open does not need to lock
-    # file but on an OS which supports multi I/O, records could possibly be
-    # mixed.
-    #
     def write(message)
       @mutex.synchronize do
         if @shift_age and @dev.respond_to?(:stat)
@@ -525,9 +500,6 @@ private
       end
     end
 
-    #
-    # Close the logging device.
-    #
     def close
       @mutex.synchronize do
         @dev.close
@@ -689,8 +661,8 @@ private
     end
 
     #
-    # Sets the log device for this application.  See the classes Logger and
-    # Logger::LogDevice for an explanation of the arguments.
+    # Sets the log device for this application.  See the class Logger for an
+    # explanation of the arguments.
     #
     def set_log(logdev, shift_age = 0, shift_size = 1024000)
       @log = Logger.new(logdev, shift_age, shift_size)
