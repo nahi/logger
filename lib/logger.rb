@@ -203,11 +203,19 @@ class Logger
   attr_accessor :progname
 
   # Logging date-time format (string passed to +strftime+).
-  attr_accessor :datetime_format
+  def datetime_format=(datetime_format)
+    @default_formatter.datetime_format = datetime_format
+  end
+
+  def datetime_format
+    @default_formatter.datetime_format
+  end
 
   # Logging formatter.  formatter#call is invoked with 4 arguments; severity,
-  # timestamp, progname and msg for each log.  It is expected to return a
-  # logdev#write-able Object.
+  # time, progname and msg for each log.  Bear in mind that time is a Time and
+  # msg is an Object that user passed and it could not be a String.  It is
+  # expected to return a logdev#write-able Object.  Default formatter is used
+  # when no formatter is set.
   attr_accessor :formatter
 
   alias sev_threshold level
@@ -257,7 +265,6 @@ class Logger
   def initialize(logdev, shift_age = 0, shift_size = 1048576)
     @progname = nil
     @level = DEBUG
-    @datetime_format = nil
     @default_formatter = Formatter.new
     @formatter = nil
     @logdev = nil
@@ -326,13 +333,7 @@ class Logger
       end
     end
     @logdev.write(
-      format_message(
-	format_severity(severity),
-	format_datetime(Time.now),
-        progname,
-	msg2str(message)
-      )
-    )
+      format_message(format_severity(severity), Time.now, progname, message))
     true
   end
   alias log add
@@ -435,35 +436,45 @@ private
     SEV_LABEL[severity] || 'ANY'
   end
 
-  def format_datetime(datetime)
-    if @datetime_format.nil?
-      datetime.strftime("%Y-%m-%dT%H:%M:%S.") << "%06d " % datetime.usec
-    else
-      datetime.strftime(@datetime_format)
-    end
-  end
-
-  def format_message(severity, timestamp, progname, msg)
-    (@formatter || @default_formatter).call(severity, timestamp, progname, msg)
-  end
-
-  def msg2str(msg)
-    case msg
-    when ::String
-      msg
-    when ::Exception
-      "#{ msg.message } (#{ msg.class })\n" << (msg.backtrace || []).join("\n")
-    else
-      msg.inspect
-    end
+  def format_message(severity, datetime, progname, msg)
+    (@formatter || @default_formatter).call(severity, datetime, progname, msg)
   end
 
 
   class Formatter
     Format = "%s, [%s#%d] %5s -- %s: %s\n"
 
-    def call(severity, timestamp, progname, msg)
-      Format % [severity[0..0], timestamp, $$, severity, progname, msg]
+    attr_accessor :datetime_format
+
+    def initialize
+      @datetime_format = nil
+    end
+
+    def call(severity, time, progname, msg)
+      Format % [severity[0..0], format_datetime(time), $$, severity, progname,
+        msg2str(msg)]
+    end
+
+  private
+
+    def format_datetime(time)
+      if @datetime_format.nil?
+        time.strftime("%Y-%m-%dT%H:%M:%S.") << "%06d " % time.usec
+      else
+        time.strftime(@datetime_format)
+      end
+    end
+
+    def msg2str(msg)
+      case msg
+      when ::String
+        msg
+      when ::Exception
+        "#{ msg.message } (#{ msg.class })\n" <<
+          (msg.backtrace || []).join("\n")
+      else
+        msg.inspect
+      end
     end
   end
 
