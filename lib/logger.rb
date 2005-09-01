@@ -483,10 +483,13 @@ private
     attr_reader :dev
     attr_reader :filename
 
+    class LogDeviceMutex
+      include MonitorMixin
+    end
+
     def initialize(log = nil, opt = {})
       @dev = @filename = @shift_age = @shift_size = nil
-      @mutex = Object.new
-      @mutex.extend(MonitorMixin)
+      @mutex = LogDeviceMutex.new
       if log.respond_to?(:write) and log.respond_to?(:close)
 	@dev = log
       else
