@@ -4,14 +4,24 @@ devel-logger -- Log dumping utility.
 What is this?
   Logging utility.
 
-Get started.
+Getting started
   See "sample" directory.
 
-How to install.
+How to install
   Try;
   $ ruby install.rb
 
-For more details.
+Changes
+
+  1.2.6 - 2005-09-13
+    * added formatter accessor to logger for dictating the way in which the
+      logger should format the messages it displays.  Thanks to Nicholas Seckar
+      (cf. [ruby-talk:153391]) and Daniel Berger.
+    * added VERSION constant.
+    * removed document for LogDevice.  It is an implementation detail and is
+      not a public interface.
+
+For more details
   See <URL:http://dev.ctor.org/doc/devel-logger/>
 
 AUTHOR
