@@ -155,8 +155,8 @@
 #
 # == Format
 #
-# Log messages are rendered in the output stream in a certain format.  The
-# default format and a sample are shown below:
+# Log messages are rendered in the output stream in a certain format by
+# default.  The default format and a sample are shown below:
 #
 # Log format:
 #   SeverityID, [Date Time mSec #pid] SeverityLabel -- ProgName: message
@@ -169,8 +169,12 @@
 #   logger.datetime_format = "%Y-%m-%d %H:%M:%S"
 #         # e.g. "2004-01-03 00:54:26"
 #
-# There is currently no supported way to change the overall format, but you may
-# have some luck hacking the Format constant.
+# You may change the overall format with Logger#formatter= method.
+#
+#   logger.formatter = proc { |severity, datetime, progname, msg|
+#     "#{datetime}: #{msg}\n"
+#   }
+#         # e.g. "Thu Sep 22 08:51:08 GMT+9:00 2005: hello world"
 #
 
 
