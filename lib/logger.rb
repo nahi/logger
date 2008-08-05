@@ -2,6 +2,9 @@
 # Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nakahiro@sarion.co.jp>.
 
 
+require 'monitor'
+
+
 # = logger.rb
 #
 # Simple logging utility.
@@ -176,9 +179,6 @@
 #   }
 #         # e.g. "Thu Sep 22 08:51:08 GMT+9:00 2005: hello world"
 #
-
-
-require 'monitor'
 
 
 class Logger
@@ -579,7 +579,13 @@ private
       postfix = previous_period_end(now).strftime("%Y%m%d")	# YYYYMMDD
       age_file = "#{@filename}.#{postfix}"
       if FileTest.exist?(age_file)
-        raise RuntimeError.new("'#{ age_file }' already exists.")
+        idx = 0
+        # .99 can be overriden
+        while idx < 100
+          idx += 1
+          age_file = "#{@filename}.#{postfix}.#{idx}"
+          break unless FileTest.exist?(age_file)
+        end
       end
       @dev.close
       File.rename("#{@filename}", age_file)
@@ -638,8 +644,8 @@ private
   class Application
     include Logger::Severity
 
+    # Name of the application given at initialize.
     attr_reader :appname
-    attr_reader :logdev
 
     #
     # == Synopsis
@@ -678,9 +684,21 @@ private
       status
     end
 
+    # Logger for this application.  See the class Logger for an explanation.
+    def logger
+      @log
+    end
+
     #
-    # Sets the log device for this application.  See the class Logger for an
-    # explanation of the arguments.
+    # Sets the logger for this application.  See the class Logger for an explanation.
+    #
+    def logger=(logger)
+      @log = logger
+    end
+
+    #
+    # Sets the log device for this application.  See <tt>Logger.new</tt> for an explanation
+    # of the arguments.
     #
     def set_log(logdev, shift_age = 0, shift_size = 1024000)
       @log = Logger.new(logdev, shift_age, shift_size)
