@@ -520,7 +520,7 @@ private
 
     def close
       @mutex.synchronize do
-        @dev.close
+        @dev.close rescue nil
       end
     end
 
@@ -569,7 +569,7 @@ private
           File.rename("#{@filename}.#{i}", "#{@filename}.#{i+1}")
         end
       end
-      @dev.close
+      @dev.close rescue nil
       File.rename("#{@filename}", "#{@filename}.0")
       @dev = create_logfile(@filename)
       return true
@@ -587,7 +587,7 @@ private
           break unless FileTest.exist?(age_file)
         end
       end
-      @dev.close
+      @dev.close rescue nil
       File.rename("#{@filename}", age_file)
       @dev = create_logfile(@filename)
       return true
