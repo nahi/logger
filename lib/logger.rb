@@ -187,7 +187,6 @@ class Logger
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
-  class ShiftingError < Error; end
 
   # Logging severity.
   module Severity
@@ -507,14 +506,21 @@ private
 
     def write(message)
       @mutex.synchronize do
-        if @shift_age and @dev.respond_to?(:stat)
-          begin
-            check_shift_log
-          rescue
-            raise Logger::ShiftingError.new("Shifting failed. #{$!}")
+        begin
+          if @shift_age and @dev.respond_to?(:stat)
+            begin
+              check_shift_log
+            rescue
+              warn("log shifting failed. #{$!}")
+            end
           end
+          begin
+            @dev.write(message)
+          rescue
+            warn("log writing failed. #{$!}")
+          end
+        rescue Exception => ignored
         end
-        @dev.write(message)
       end
     end
 
@@ -543,8 +549,8 @@ private
 
     def add_log_header(file)
       file.write(
-     	"# Logfile created on %s by %s\n" % [Time.now.to_s, Logger::ProgName]
-    )
+        "# Logfile created on %s by %s\n" % [Time.now.to_s, Logger::ProgName]
+      )
     end
 
     SiD = 24 * 60 * 60
