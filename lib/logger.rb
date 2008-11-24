@@ -1,5 +1,5 @@
 # logger.rb - simple logging utility
-# Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nakahiro@sarion.co.jp>.
+# Copyright (C) 2000-2003, 2005, 2008  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 
 require 'monitor'
@@ -182,11 +182,12 @@ require 'monitor'
 
 
 class Logger
-  VERSION = "1.2.6"
-  /: (\S+),v (\S+)/ =~ %q$Id$
+  VERSION = "1.2.7"
+  /: (\S+) (\S+)/ =~ %q$Id$
   ProgName = "#{$1}/#{$2}"
 
   class Error < RuntimeError; end
+  class ShiftingError < Error; end # not used after 1.2.7. just for compat.
 
   # Logging severity.
   module Severity
@@ -563,8 +564,9 @@ private
         end
       else
         now = Time.now
-        if @dev.stat.mtime <= previous_period_end(now)
-          shift_log_period(now)
+        period_end = previous_period_end(now)
+        if @dev.stat.mtime <= period_end
+          shift_log_period(period_end)
         end
       end
     end
@@ -581,12 +583,13 @@ private
       return true
     end
 
-    def shift_log_period(now)
-      postfix = previous_period_end(now).strftime("%Y%m%d")	# YYYYMMDD
+    def shift_log_period(period_end)
+      postfix = period_end.strftime("%Y%m%d")	# YYYYMMDD
       age_file = "#{@filename}.#{postfix}"
       if FileTest.exist?(age_file)
+        # try to avoid filename crash caused by Timestamp change.
         idx = 0
-        # .99 can be overriden
+        # .99 can be overriden; avoid too much file search with 'loop do'
         while idx < 100
           idx += 1
           age_file = "#{@filename}.#{postfix}.#{idx}"
@@ -700,6 +703,8 @@ private
     #
     def logger=(logger)
       @log = logger
+      @log.progname = @appname
+      @log.level = @level
     end
 
     #
@@ -734,6 +739,7 @@ private
   private
 
     def run
+      # TODO: should be an NotImplementedError
       raise RuntimeError.new('Method run must be defined in the derived class.')
     end
   end
