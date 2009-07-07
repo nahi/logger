@@ -1,13 +1,5 @@
 # logger.rb - simple logging utility
 # Copyright (C) 2000-2003, 2005, 2008  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
-
-
-require 'monitor'
-
-
-# = logger.rb
-#
-# Simple logging utility.
 #
 # Author:: NAKAMURA, Hiroshi  <nakahiro@sarion.co.jp>
 # Documentation:: NAKAMURA, Hiroshi and Gavin Sinclair
@@ -17,10 +9,11 @@ require 'monitor'
 # Revision:: $Id$
 #
 # See Logger for documentation.
-#
 
 
-#
+require 'monitor'
+
+
 # == Description
 #
 # The Logger class provides a simple but sophisticated logging utility that
@@ -506,8 +499,8 @@ private
     end
 
     def write(message)
-      @mutex.synchronize do
-        begin
+      begin
+        @mutex.synchronize do
           if @shift_age and @dev.respond_to?(:stat)
             begin
               check_shift_log
@@ -520,13 +513,18 @@ private
           rescue
             warn("log writing failed. #{$!}")
           end
-        rescue Exception => ignored
         end
+      rescue Exception => ignored
+        warn("log writing failed. #{ignored}")
       end
     end
 
     def close
-      @mutex.synchronize do
+      begin
+        @mutex.synchronize do
+          @dev.close rescue nil
+        end
+      rescue Exception => ignored
         @dev.close rescue nil
       end
     end
