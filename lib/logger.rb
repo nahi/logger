@@ -524,7 +524,7 @@ private
         @mutex.synchronize do
           @dev.close rescue nil
         end
-      rescue Exception => ignored
+      rescue Exception
         @dev.close rescue nil
       end
     end
