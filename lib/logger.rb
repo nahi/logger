@@ -189,9 +189,8 @@ require 'monitor'
 
 
 class Logger
-  VERSION = "1.2.7"
-  /: (\S+) (\S+)/ =~ %q$Id$
-  ProgName = "#{$1}/#{$2}"
+  VERSION = "1.2.8"
+  ProgName = "#{File.basename(__FILE__)}/#{VERSION}"
 
   class Error < RuntimeError; end
   class ShiftingError < Error; end # not used after 1.2.7. just for compat.

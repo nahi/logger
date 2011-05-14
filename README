@@ -1,37 +1,24 @@
-devel-logger -- Log dumping utility.
-  version 1.2.6
+logger.rb - simple logging utility
+  version 1.2.8
 
-What is this?
-  Logging utility.
-
-Getting started
-  See "sample" directory.
-
-How to install
-  Try;
-  $ ruby install.rb
+Document
+  See RDoc in lib/logger.rb. To get RDoc in html format, exec 'rake doc'.
 
 Changes
 
-  1.2.6 - 2005-09-13
-    * added formatter accessor to logger for dictating the way in which the
-      logger should format the messages it displays.  Thanks to Nicholas Seckar
-      (cf. [ruby-talk:153391]) and Daniel Berger.
-    * added VERSION constant.
-    * removed document for LogDevice.  It is an implementation detail and is
-      not a public interface.
+  1.2.8 - 2011-05-14
+    * gemified
 
-For more details
-  See <URL:http://dev.ctor.org/doc/devel-logger/>
+Development Repository
+  https://github.com/nahi/logger
 
-AUTHOR
+Author
   NAKAMURA, Hiroshi a.k.a. NaHi
-  nakahiro@sarion.co.jp
+  nahi@ruby-lang.org
 
   Documentation: Gavin Sinclair
 
-LEGAL NOTICE
-  Copyright (C) 2000, 2001, 2002, 2003, 2005  NAKAMURA, Hiroshi
+Legan notice
   This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
   redistribute it and/or modify it under the same terms of Ruby's license;
   either the dual license version in 2003, or any later version.

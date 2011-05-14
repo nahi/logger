@@ -446,8 +446,8 @@ class TestLogDevice < Test::Unit::TestCase
     filename1 = @filename + ".#{yyyymmdd}"
     filename2 = @filename + ".#{yyyymmdd}.1"
     filename3 = @filename + ".#{yyyymmdd}.2"
-    logger = Logger.new(@filename, 'now')
     begin
+      logger = Logger.new(@filename, 'now')
       assert(File.exist?(@filename))
       assert(!File.exist?(filename1))
       assert(!File.exist?(filename2))
@@ -468,7 +468,7 @@ class TestLogDevice < Test::Unit::TestCase
       assert(File.exist?(filename2))
       assert(File.exist?(filename3))
     ensure
-      logger.close
+      logger.close if logger
       [filename1, filename2, filename3].each do |filename|
         File.unlink(filename) if File.exist?(filename)
       end
