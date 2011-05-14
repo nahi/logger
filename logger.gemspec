@@ -1,6 +1,6 @@
 require 'rubygems'
 SPEC = Gem::Specification.new do |s|
-  require 'lib/logger.rb'
+  require './lib/logger.rb'
   s.name = "logger"
   s.version = Logger::VERSION
   s.date = "2011-05-14"
@@ -11,5 +11,4 @@ SPEC = Gem::Specification.new do |s|
   s.summary = "simple logging utility"
   s.files = ["README", "lib/logger.rb", "test/test_logger.rb", *Dir.glob("sample/*.rb")]
   s.require_path = "lib"
-  s.has_rdoc = true
 end

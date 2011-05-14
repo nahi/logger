@@ -6,7 +6,7 @@ task :default => :gem
 
 begin
   require 'rake/gempackagetask'
-  require 'logger.gemspec'
+  load 'logger.gemspec'
   Rake::GemPackageTask.new(SPEC) do |pkg|
     pkg.need_zip = true
     pkg.need_tar = true
@@ -30,7 +30,7 @@ Rake::TestTask.new("test") do |test|
 end
 
 Rake::RDocTask.new("doc") do |rdoc|
-  load 'lib/logger.rb'
+  require './lib/logger.rb'
   rdoc.rdoc_dir = 'doc'
   rdoc.title = "Logger Library Document: Version #{Logger::VERSION}"
   rdoc.rdoc_files.include('lib/logger.rb')
